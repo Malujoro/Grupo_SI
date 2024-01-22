@@ -16,6 +16,7 @@ typedef struct
 } Cliente;
 
 ///////////////////////////  OUTROS  //////////////////////////////////////////
+
 // Função para limpar o Buffer
 void limpaBuffer()
 {
@@ -99,6 +100,7 @@ int menuCliente()
     return op;
 }
 
+// Função para ler um arquivo e salvar as informações em um vetor
 Cliente *lerArquivo(int *tam)
 {
     FILE *arquivo = abrirArquivo("clientes.txt", "r");
@@ -119,6 +121,7 @@ Cliente *lerArquivo(int *tam)
 }
 
 ///////////////////////////  LEITURA  //////////////////////////////////////////
+
 // Função para ler o nome do cliente
 void leiaNome(char *nome)
 {
@@ -336,6 +339,8 @@ void leiaEmail(char *email)
 }
 
 ///////////////////////////  BUSCA  //////////////////////////////////////////
+
+// Função para buscar e exibir todos os clientes com um nome inserido
 void buscaNome()
 {
     FILE *arquivo = abrirArquivo("clientes.txt", "r");
@@ -358,6 +363,7 @@ void buscaNome()
     fclose(arquivo);
 }
 
+// Função para buscar um cliente com pelo CPF
 int buscaCPF(Cliente *pessoa)
 {
     FILE *arquivo = abrirArquivo("clientes.txt", "r");
@@ -376,6 +382,7 @@ int buscaCPF(Cliente *pessoa)
     return 0;
 }
 
+// Função para buscar um cliente com pelo RG
 int buscaRG(Cliente *pessoa)
 {
     FILE *arquivo = abrirArquivo("clientes.txt", "r");
@@ -394,6 +401,7 @@ int buscaRG(Cliente *pessoa)
     return 0;
 }
 
+// Função para buscar um cliente com pelo Telefone
 int buscaTelefone(Cliente *pessoa)
 {
     FILE *arquivo = abrirArquivo("clientes.txt", "r");
@@ -412,6 +420,7 @@ int buscaTelefone(Cliente *pessoa)
     return 0;
 }
 
+// Função para buscar um cliente com pelo Email
 int buscaEmail(Cliente *pessoa)
 {
     FILE *arquivo = abrirArquivo("clientes.txt", "r");
@@ -576,7 +585,10 @@ void consultarCliente()
     fclose(arquivo);
 }
 
+// Função para EDITAR cliente
 // void editarCliente();
+
+// Função para EXCLUIR cliente
 // void excluirCliente();
 
 int main()
