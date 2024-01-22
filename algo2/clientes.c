@@ -100,6 +100,7 @@ int menuCliente()
     return op;
 }
 
+// Função para exibir o menu de opções para buscar
 int menuBusca()
 {
     int op;
@@ -113,6 +114,7 @@ int menuBusca()
     return op;
 }
 
+// Função para exibir o menu de opções para editar
 int menuEdit()
 {
     int op;
@@ -161,6 +163,18 @@ int salvarCliente(Cliente pessoa)
     fclose(arquivo);
     return 1;
 
+}
+
+// Salva a informação editada, reescrevendo o arquivo
+void refazerArquivo(Cliente *vetor, int tam)
+{
+    FILE *arquivo = abrirArquivo("clientes.txt", "w");
+    fclose(arquivo);
+
+    for(int i = 0; i < tam; i++)
+        salvarCliente(vetor[i]);
+
+    free(vetor);
 }
 
 ///////////////////////////  LEITURA  //////////////////////////////////////////
@@ -399,21 +413,23 @@ int buscaNome(Cliente *pessoa, int *pos)
     {
         if(strcmp(nome, vetor[i].nome) == 0)
         {
-            exibirCliente(vetor[i]);
-
-            printf("\nEsse cliente? ");
-            ch = getchar();
-            limpaBuffer();
-            if(ch == 'S' || ch == 's')
+            do
             {
-                *pos = i;
-                *pessoa = vetor[i];
-                return 1;
-            }
-            else if (ch == 'N' || ch == 'n')
-            {
-                printf("\nBuscando por Nome: [%s]...\n", nome);
-            }
+                exibirCliente(vetor[i]);
+                printf("\nEsse cliente? ");
+                ch = getchar();
+                limpaBuffer();
+                if(ch == 'S' || ch == 's')
+                {
+                    *pos = i;
+                    *pessoa = vetor[i];
+                    return 1;
+                }
+                else if (ch == 'N' || ch == 'n')
+                    printf("\nBuscando por Nome: [%s]...\n", nome);
+                else
+                    printf("\nOpção inválida!!\n");
+            }while(ch != 'N' && ch != 'n');
         }
     }
     printf("Não foi encontrado ninguém com esse nome!!\n");
@@ -646,14 +662,13 @@ void cadastrarCliente()
 }
 
 // Função para CONSULTAR cliente
-void consultarCliente()
+int consultarCliente(Cliente *pessoa, int *pos)
 {
-    Cliente pessoa;
-    int op, pos;
+    int op;
 
     do
     {
-        printf("\nConsultar cliente por:");
+        printf("\nBuscar cliente por:");
         printf("\n[1] - Nome");
         printf("\n[2] - CPF");
         printf("\n[3] - RG");
@@ -665,27 +680,28 @@ void consultarCliente()
         switch(op)
         {
             case 1:
-                buscaNome(&pessoa, &pos);
+                if(buscaNome(pessoa, pos) == 0)
+                    op = 0;
                 break;
 
             case 2:
-                if(buscaCPF(&pessoa, &pos))
-                    exibirCliente(pessoa);
+                if(buscaCPF(pessoa, pos))
+                    exibirCliente(*pessoa);
                 break;
 
             case 3:
-                if(buscaRG(&pessoa, &pos))
-                    exibirCliente(pessoa);
+                if(buscaRG(pessoa, pos))
+                    exibirCliente(*pessoa);
                 break;
 
             case 4:
-                if(buscaTelefone(&pessoa, &pos))
-                    exibirCliente(pessoa);
+                if(buscaTelefone(pessoa, pos))
+                    exibirCliente(*pessoa);
                 break;
 
             case 5:
-                if(buscaEmail(&pessoa, &pos))
-                    exibirCliente(pessoa);
+                if(buscaEmail(pessoa, pos))
+                    exibirCliente(*pessoa);
                 break;
             case 0:
                 printf("\nVoltando...\n");
@@ -695,6 +711,7 @@ void consultarCliente()
                 break;
         }
     }while(op < 0 || op > 5);
+    return op;
 }
 
 // Função para EDITAR cliente
@@ -703,43 +720,7 @@ void editarCliente()
     int op, pos;
     Cliente pessoa, pessoa2;
 
-    // Sistema de Buscas
-    do
-    {
-        printf("\n-----Buscar por-----");
-        op = menuBusca();
-        switch(op)
-        {
-            case 1:
-                if(buscaCPF(&pessoa, &pos))
-                    exibirCliente(pessoa);
-                break;
-
-            case 2:
-                if(buscaRG(&pessoa, &pos))
-                    exibirCliente(pessoa);
-                break;
-
-            case 3:
-                if(buscaTelefone(&pessoa, &pos))
-                    exibirCliente(pessoa);
-                break;
-
-            case 4:
-                if(buscaEmail(&pessoa, &pos))
-                    exibirCliente(pessoa);
-                break;
-            case 0:
-                printf("\nVoltando...\n");
-                break;
-
-            default:
-                break;
-        }
-    }while(op < 0 || op > 4);
-
-    // Edita os dados de um cliente
-    if(op != 0)
+    if(consultarCliente(&pessoa, &pos))
     {
         do
         {
@@ -787,16 +768,39 @@ void editarCliente()
     vetor[pos] = pessoa;
 
     // Salva a informação editada, reescrevendo o arquivo
-    FILE *arquivo = abrirArquivo("clientes.txt", "w");
-    fclose(arquivo);
-    for(int i = 0; i < tam; i++)
-        salvarCliente(vetor[i]);
-
-    free(vetor);
+    refazerArquivo(vetor, tam);
 }
 
 // Função para EXCLUIR cliente
-// void excluirCliente();
+void excluirCliente()
+{
+    int pos, tam;
+    Cliente pessoa;
+    char ch;
+    Cliente *vetor = lerArquivo(&tam);
+
+    if(consultarCliente(&pessoa, &pos))
+    {
+        do
+        {
+            printf("Tem certeza que deseja excluir? ");
+            ch = getchar();
+            limpaBuffer();
+            if(ch == 'S' || ch == 's')
+            {
+                tam--;
+                for(int i = pos; i < tam; i++)
+                    vetor[i] = vetor[i+1];
+                
+                refazerArquivo(vetor, tam);
+            }
+            else if (ch == 'N' || ch == 'n')
+                printf("\nCancelando...\n");
+            else
+                printf("\nOpção inválida!!\n");
+        }while(ch != 'N' && ch != 'n' && ch != 's' && ch != 'S');
+    }
+}
 
 int main()
 {
@@ -812,7 +816,9 @@ int main()
                 break;
             
             case 2:
-                consultarCliente();
+                Cliente pessoa;
+                int tam;
+                consultarCliente(&pessoa, &tam);
                 break;
 
             case 3:
@@ -820,7 +826,7 @@ int main()
                 break;
             
             case 4:
-                // excluirCliente();
+                excluirCliente();
                 break;
 
             case 0:
