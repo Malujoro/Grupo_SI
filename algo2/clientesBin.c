@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define ARQCLIENTE "clientes.bin"
 #define TAM1 100 // Tamanho do Nome e Email
 #define TAM2 15 // Tamanho do CPF e Telefone
 #define TAM3 13 // Tamanho do RG
@@ -12,6 +13,7 @@ typedef struct
     char cpf[TAM2]; // 123.456.789-00
     char rg[TAM3];  // 12.345.678-9
     char telefone[TAM2]; // (00)12345-6789
+    char endereco[TAM1];
     char email[TAM1];
 } Cliente;
 
@@ -24,6 +26,7 @@ void limpaBuffer()
 }
 
 // Função para ler apenas números inteiros
+// Recebe o Texto a ser exibido. Retorna o Inteiro lido
 int leiaInt(char *texto)
 {
     int num, retorno;
@@ -44,6 +47,7 @@ int leiaInt(char *texto)
 }
 
 // Função para verificar se uma string é composta apenas por números
+// Recebe a String a ser verificada e o seu tamanho
 int verificaInt(char *string, int tam)
 {
     for(int i = 0; i < tam; i++)
@@ -51,27 +55,39 @@ int verificaInt(char *string, int tam)
         if(string[i] - '0' < 0 || string[i] - '0' > 9)
             return 0;
     }
-
     return 1;
 }
 
 // Função para converter uma string em maiúsculas
-void maiusc(char *string, char *string2, int tam)
+// Recebe a string usada como base e o seu tamanho. Retorna o endereço da string em maiúscula
+char *maiusc(char *string, int tam)
 {
+    char *string2 = (char *) malloc(tam * sizeof(char));
+
     for(int i = 0; i < tam; i++)
     {
         if(string[i] >= 'a' && string[i] <= 'z')
             string2[i] = string[i] - ('a' - 'A');
     }
+    
+    return string2;
 }
 
 // Função para exibir um cliente
+// Recebe a variavel do Cliente
 void exibirCliente(Cliente pessoa)
 {
-    printf("\n%s \t %s \t %s\t %s \t %s\n", pessoa.nome, pessoa.cpf, pessoa.rg, pessoa.telefone, pessoa.email);
+    printf("\n----------Cliente----------");
+    printf("\nNome: %s", pessoa.nome);
+    printf("\nCPF: %s", pessoa.cpf);
+    printf("\nRG: %s", pessoa.rg);
+    printf("\nTelefone: %s", pessoa.telefone);
+    printf("\nEndereço: %s", pessoa.endereco);
+    printf("\nEmail: %s\n", pessoa.email);
 }
 
 // Função para exibir o menu de opções da seção cliente
+// Retorna a opção escolhida
 int menuCliente()
 {
     int op;
@@ -80,13 +96,14 @@ int menuCliente()
     printf("\n[2] - Consultar cliente");
     printf("\n[3] - Editar cliente");
     printf("\n[4] - Excluir cliente");
+    printf("\n[5] - Exibir todos");
     printf("\n[0] - Voltar");
     op = leiaInt("\nOpção: ");
-
     return op;
 }
 
-// Função para exibir o menu de opções para editar
+// Função para exibir o menu de opções para buscar/editar
+// Retorna a opção escolhida
 int menuEdit()
 {
     int op;
@@ -94,7 +111,8 @@ int menuEdit()
     printf("\n[2] - CPF");
     printf("\n[3] - RG");
     printf("\n[4] - Telefone");
-    printf("\n[5] - Email");
+    printf("\n[5] - Endereço");
+    printf("\n[6] - Email");
     printf("\n[0] - Voltar");
     op = leiaInt("\nOpção: ");
 
@@ -104,70 +122,93 @@ int menuEdit()
 ///////////////////////////  ARQUIVO  //////////////////////////////////////////
 
 // Função para abrir arquivos
+// Recebe o nome e modo do arquivo. Retorna o endereço do arquivo
 FILE *abrirArquivo(char *nome, char *modo)
 {
     FILE *arquivo = fopen(nome, modo);
 
     if(arquivo == NULL)
     {
-        printf("\nErro ao abrir o arquivo %s", nome);
+        printf("\nErro ao abrir o arquivo %s\n", nome);
         exit(EXIT_FAILURE);
     }
     
     return arquivo;
 }
 
-// Função para ler um arquivo e salvar as informações em um vetor
-Cliente *lerArquivoCliente(int *tam)
+// Função para verificar se um arquivo existe
+// Recebe o nome do arquivo
+int arquivoExiste(char *nome)
 {
-    FILE *arquivo = abrirArquivo("clientes.txt", "r");
-    Cliente aux;
+    FILE *arquivo = fopen(nome, "rb");
 
-    for(*tam = 0; fscanf(arquivo, "%s %s %s %s %[^\n]s", aux.cpf, aux.rg, aux.telefone, aux.email, aux.nome) != -1; (*tam)++);
-
-    rewind(arquivo);
-
-    Cliente *vetor = (Cliente *) malloc((*tam) * sizeof(Cliente));
-    for(int i = 0; i < *tam; i++)
-    {
-        fscanf(arquivo, "%s %s %s %s %[^\n]s", aux.cpf, aux.rg, aux.telefone, aux.email, aux.nome);
-        vetor[i] = aux;
-    }
-
-    return vetor;
+    if(arquivo == NULL)
+        return 0;
+    
+    fclose(arquivo);
+    return 1;
 }
 
-// Função para salvar as inforamções do cliente em um arquivo
+///////////////////////////  CLIENTE  //////////////////////////////////////////
+
+// Função para ler um arquivo e salvar as informações em um vetor
+// Recebe uma variável para guardar o tamanho. Retorna o endereço do vetor
+Cliente *lerArquivoCliente(int *tam)
+{
+    if(arquivoExiste(ARQCLIENTE))
+    {
+        FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
+        Cliente aux;
+
+
+        Cliente *vetor = (Cliente *) malloc(sizeof(Cliente));
+        *tam = 0;
+        while(fread(&aux, sizeof(Cliente), 1, arquivo) == 1)
+        {
+            vetor[*tam] = aux;
+            (*tam)++;
+            // Aumenta o tamanho do vetor dinamicamente
+            vetor = realloc(vetor, ((*tam) + 1) * sizeof(Cliente));
+        }
+        fclose(arquivo);
+
+        return vetor;
+    }
+    *tam = -1;
+    return NULL;
+}
+
+// Função para salvar as informações do cliente em um arquivo
+// Recebe a variável da pessoa
 int salvarCliente(Cliente pessoa)
 {
-    FILE *arquivo = abrirArquivo("clientes.txt", "a");
+    FILE *arquivo = abrirArquivo(ARQCLIENTE, "ab");
 
-    if(fprintf(arquivo, "%s %s %s %s %s", pessoa.cpf, pessoa.rg, pessoa.telefone, pessoa.email, pessoa.nome) < 0)
+    if(fwrite(&pessoa, sizeof(Cliente), 1, arquivo) < 1)
     {
         printf("\nErro! Não foi possível salvar as informações\n");
         return 0;
     }
-    fputc('\n', arquivo);
     fclose(arquivo);
     return 1;
 
 }
 
-// Salva a informação editada, reescrevendo o arquivo
+// Função para salvar a informação editada, reescrevendo o arquivo
+// Recebe o endereço do vetor que guarda todas as informações e seu tamanho
 void refazerArquivoCliente(Cliente *vetor, int tam)
 {
-    FILE *arquivo = abrirArquivo("clientes.txt", "w");
+    FILE *arquivo = abrirArquivo(ARQCLIENTE, "wb");
     fclose(arquivo);
 
     for(int i = 0; i < tam; i++)
         salvarCliente(vetor[i]);
-
-    free(vetor);
 }
 
 ///////////////////////////  LEITURA  //////////////////////////////////////////
 
 // Função para ler o nome do cliente
+// Recebe a variável que vai receber o nome
 void leiaNome(char *nome)
 {
     int tam;
@@ -177,11 +218,12 @@ void leiaNome(char *nome)
     limpaBuffer();
 
     tam = strlen(nome);
-    maiusc(nome, nome, tam);
+    nome = maiusc(nome, tam);
 }
 
 // Função para ler o CPF digitado e conferir se está em um formato válido 123.456.789-00 ou 12345678900
 // Após a leitura, irá formata-lo e deixar no formato 123.456.789-00
+// Recebe a variável que vai receber o CPF
 void leiaCPF(char *cpf)
 {
     char aux[TAM2];
@@ -242,6 +284,7 @@ void leiaCPF(char *cpf)
 
 // Função para ler o RG digitado e conferir se está em um formato válido 12.345.678-9 ou 123456789
 // Após a leitura, irá formata-lo e deixar no formato 12.345.678-9
+// Recebe a variável que vai receber o RG
 void leiaRG(char *rg)
 {
     char aux[TAM3];
@@ -299,6 +342,7 @@ void leiaRG(char *rg)
 
 // Função para ler o telefone digitado e conferir se está em um formato válido (00)12345-6789 ou 00123456789 
 // Após a leitura, irá formata-lo e deixar no formato (00)12345-6789
+// Recebe a variável que vai receber o telefone
 void leiaTelefone(char *tel)
 {
     char aux[TAM2];
@@ -358,8 +402,23 @@ void leiaTelefone(char *tel)
     
 }
 
+// Função para ler o endereço do cliente
+// Recebe a variável que vai receber o endereço
+void leiaEndereco(char *endereco)
+{
+    int tam;
+    
+    printf("\nEndereço: ");
+    scanf(" %[^\n]s", endereco);
+    limpaBuffer();
+
+    tam = strlen(endereco);
+    endereco = maiusc(endereco, tam);
+}
+
 // Função para ler o Email do cliente
-// Não permite espaços no Email
+// Não permite espaços, símbolos e acentuações no Email
+// Recebe a variável que vai receber o Email
 void leiaEmail(char *email)
 {
     int tam, i;
@@ -372,7 +431,9 @@ void leiaEmail(char *email)
         tam = strlen(email);
         for(i = 0; i < tam; i++)
         {
-            if(email[i] == ' ')
+            // if(email[i] == ' ')
+            // Blindagem para o email aceitar apenas caracteres, números e os símbolos @ _ .
+            if(email[i] != '_' && email[i] != '@' && email[i] != '.' && (email[i] < 'a' || email[i] > 'z') && (email[i] < 'A' || email[i] > 'Z') && (email[i] < '0' || email[i] > '9'))
             {
                 printf("\nEmail Inválido!!\n");
                 break;
@@ -380,18 +441,19 @@ void leiaEmail(char *email)
         }
     }while(i != tam);
 
-    maiusc(email, email, tam);
+    email = maiusc(email, tam);
 }
 
 ///////////////////////////  BUSCA  //////////////////////////////////////////
 
-// Função para buscar e exibir todos os clientes com um nome inserido
+// Função para buscar um cliente pelo Nome
+// Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
 int buscaNome(Cliente *pessoa, int *pos)
 {
     int tam;
     Cliente *vetor = lerArquivoCliente(&tam);
 
-    FILE *arquivo = abrirArquivo("clientes.txt", "r");
+    FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
     char nome[TAM1];
     char ch;
 
@@ -422,16 +484,18 @@ int buscaNome(Cliente *pessoa, int *pos)
     }
     printf("Não foi encontrado ninguém com esse nome!!\n");
     fclose(arquivo);
+    free(vetor);
     return 0;
 }
 
 // Função para buscar um cliente com pelo CPF
+// Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
 int buscaCPF(Cliente *pessoa, int *pos)
 {
     int tam;
     Cliente *vetor = lerArquivoCliente(&tam);
 
-    FILE *arquivo = abrirArquivo("clientes.txt", "r");
+    FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
     char cpf[TAM2];
 
     leiaCPF(cpf);
@@ -446,19 +510,20 @@ int buscaCPF(Cliente *pessoa, int *pos)
             return 1;
         }
     }
-
     printf("Não foi encontrado ninguém com esse CPF!!\n");
     fclose(arquivo);
+    free(vetor);
     return 0;
 }
 
 // Função para buscar um cliente com pelo RG
+// Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
 int buscaRG(Cliente *pessoa, int *pos)
 {
     int tam;
     Cliente *vetor = lerArquivoCliente(&tam);
 
-    FILE *arquivo = abrirArquivo("clientes.txt", "r");
+    FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
     char rg[TAM2];
 
     leiaRG(rg);
@@ -476,16 +541,18 @@ int buscaRG(Cliente *pessoa, int *pos)
 
     printf("Não foi encontrado ninguém com esse CPF!!\n");
     fclose(arquivo);
+    free(vetor);
     return 0;
 }
 
 // Função para buscar um cliente com pelo Telefone
+// Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
 int buscaTelefone(Cliente *pessoa, int *pos)
 {
     int tam;
     Cliente *vetor = lerArquivoCliente(&tam);
 
-    FILE *arquivo = abrirArquivo("clientes.txt", "r");
+    FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
     char telefone[TAM2];
 
     leiaTelefone(telefone);
@@ -503,16 +570,60 @@ int buscaTelefone(Cliente *pessoa, int *pos)
 
     printf("Não foi encontrado ninguém com esse Telefone!!\n");
     fclose(arquivo);
+    free(vetor);
+    return 0;
+}
+
+// Função para buscar um cliente pelo Endereço
+// Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
+int buscaEndereco(Cliente *pessoa, int *pos)
+{
+    int tam;
+    Cliente *vetor = lerArquivoCliente(&tam);
+
+    FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
+    char endereco[TAM1];
+    char ch;
+
+    leiaEndereco(endereco);
+    printf("\nBuscando por Endereco: [%s]...\n", endereco);
+    for(int i = 0; i < tam; i++)
+    {
+        if(strcmp(endereco, vetor[i].endereco) == 0)
+        {
+            do
+            {
+                exibirCliente(vetor[i]);
+                printf("\nEsse cliente? ");
+                ch = getchar();
+                limpaBuffer();
+                if(ch == 'S' || ch == 's')
+                {
+                    *pos = i;
+                    *pessoa = vetor[i];
+                    return 1;
+                }
+                else if (ch == 'N' || ch == 'n')
+                    printf("\nBuscando por Endereco: [%s]...\n", endereco);
+                else
+                    printf("\nOpção inválida!!\n");
+            }while(ch != 'N' && ch != 'n');
+        }
+    }
+    printf("Não foi encontrado ninguém com esse endereço!!\n");
+    fclose(arquivo);
+    free(vetor);
     return 0;
 }
 
 // Função para buscar um cliente com pelo Email
+// Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
 int buscaEmail(Cliente *pessoa, int *pos)
 {
     int tam;
     Cliente *vetor = lerArquivoCliente(&tam);
 
-    FILE *arquivo = abrirArquivo("clientes.txt", "r");
+    FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
     char email[TAM2];
 
     leiaEmail(email);
@@ -530,15 +641,21 @@ int buscaEmail(Cliente *pessoa, int *pos)
 
     printf("Não foi encontrado ninguém com esse Email!!\n");
     fclose(arquivo);
+    free(vetor);
     return 0;
 }
 
 ///////////////////////////  CADASTRO  //////////////////////////////////////////
+
+// Função para cadastrar o nome
+// Recebe a variável que vai receber o nome
 void cadastrarNome(char *nome)
 {
     leiaNome(nome);
 }
 
+// Função para cadastrar o CPF
+// Recebe a variável que vai receber o CPF
 void cadastrarCPF(char *cpf)
 {
     int tam;
@@ -562,6 +679,8 @@ void cadastrarCPF(char *cpf)
     free(vetor);
 }
 
+// Função para cadastrar o RG
+// Recebe a variável que vai receber o RG
 void cadastrarRG(char *rg)
 {
     int tam;
@@ -585,6 +704,8 @@ void cadastrarRG(char *rg)
     free(vetor);
 }
 
+// Função para cadastrar o telefone
+// Recebe a variável que vai receber o telefone
 void cadastrarTelefone(char *telefone)
 {
     int tam;
@@ -608,6 +729,15 @@ void cadastrarTelefone(char *telefone)
     free(vetor);
 }
 
+// Função para cadastrar o endereco
+// Recebe a variável que vai receber o endereco
+void cadastrarEndereco(char *endereco)
+{
+    leiaEndereco(endereco);
+}
+
+// Função para cadastrar o email
+// Recebe a variável que vai receber o email
 void cadastrarEmail(char *email)
 {
     int tam;
@@ -642,6 +772,7 @@ void cadastrarCliente()
     cadastrarCPF(pessoa.cpf);
     cadastrarRG(pessoa.rg);
     cadastrarTelefone(pessoa.telefone);
+    cadastrarEndereco(pessoa.endereco);
     cadastrarEmail(pessoa.email);
 
     if(salvarCliente(pessoa))
@@ -650,56 +781,70 @@ void cadastrarCliente()
 }
 
 // Função para CONSULTAR cliente
+// Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
 int consultarCliente(Cliente *pessoa, int *pos)
 {
-    int op;
-
-    do
+    int op, tam;
+    Cliente *vetor = lerArquivoCliente(&tam);
+    if(vetor != NULL)
     {
-        printf("\nBuscar cliente por:");
-        printf("\n[1] - Nome");
-        printf("\n[2] - CPF");
-        printf("\n[3] - RG");
-        printf("\n[4] - Telefone");
-        printf("\n[5] - Email");
-        printf("\n[0] - Voltar");
-        op = leiaInt("\nOpção: ");
-
-        switch(op)
+        do
         {
-            case 1:
-                if(buscaNome(pessoa, pos) == 0)
-                    op = 0;
-                break;
+            printf("\n-----Buscar cliente por:-----");
+            op = menuEdit();
 
-            case 2:
-                if(buscaCPF(pessoa, pos))
-                    exibirCliente(*pessoa);
-                break;
+            switch(op)
+            {
+                case 1:
+                    if(buscaNome(pessoa, pos) == 0)
+                        op = 0;
+                    break;
 
-            case 3:
-                if(buscaRG(pessoa, pos))
-                    exibirCliente(*pessoa);
-                break;
+                case 2:
+                    if(buscaCPF(pessoa, pos))
+                        exibirCliente(*pessoa);
+                    else
+                        op = 0;
+                    break;
 
-            case 4:
-                if(buscaTelefone(pessoa, pos))
-                    exibirCliente(*pessoa);
-                break;
+                case 3:
+                    if(buscaRG(pessoa, pos))
+                        exibirCliente(*pessoa);
+                    else
+                        op = 0;
+                    break;
 
-            case 5:
-                if(buscaEmail(pessoa, pos))
-                    exibirCliente(*pessoa);
-                break;
-            case 0:
-                printf("\nVoltando...\n");
-                break;
+                case 4:
+                    if(buscaTelefone(pessoa, pos))
+                        exibirCliente(*pessoa);
+                    else
+                        op = 0;
+                    break;
 
-            default:
-                break;
-        }
-    }while(op < 0 || op > 5);
-    return op;
+                case 5:
+                    if(buscaEndereco(pessoa, pos) == 0)
+                        op = 0;
+                    break;
+
+                case 6:
+                    if(buscaEmail(pessoa, pos))
+                        exibirCliente(*pessoa);
+                    else
+                        op = 0;
+                    break;
+
+                case 0:
+                    printf("\nVoltando...\n");
+                    break;
+
+                default:
+                    break;
+            }
+        }while(op < 0 || op > 6);
+        return op;
+    }
+    printf("\nNinguém foi cadastrado ainda!!\n");
+    return 0;
 }
 
 // Função para EDITAR cliente
@@ -737,6 +882,11 @@ void editarCliente()
                     break;
 
                 case 5:
+                    cadastrarEndereco(pessoa2.endereco);
+                    strcpy(pessoa.endereco, pessoa2.endereco);
+                    break;
+
+                case 6:
                     cadastrarEmail(pessoa2.email);
                     strcpy(pessoa.email, pessoa2.email);
                     break;
@@ -747,31 +897,32 @@ void editarCliente()
                 default:
                     break;
             }
-        }while(op < 0 || op > 5);
+        }while(op < 0 || op > 6);
+
+        // Lê todos os dados do arquivo
+        int tam;
+        Cliente *vetor = lerArquivoCliente(&tam);
+        vetor[pos] = pessoa;
+
+        // Salva a informação editada, reescrevendo o arquivo
+        refazerArquivoCliente(vetor, tam);
+        free(vetor);
     }
-
-    // Lê todos os dados do arquivo
-    int tam;
-    Cliente *vetor = lerArquivoCliente(&tam);
-    vetor[pos] = pessoa;
-
-    // Salva a informação editada, reescrevendo o arquivo
-    refazerArquivoCliente(vetor, tam);
 }
 
 // Função para EXCLUIR cliente
 void excluirCliente()
 {
     int pos, tam;
-    Cliente pessoa;
     char ch;
+    Cliente pessoa;
     Cliente *vetor = lerArquivoCliente(&tam);
 
     if(consultarCliente(&pessoa, &pos))
     {
         do
         {
-            printf("Tem certeza que deseja excluir? ");
+            printf("Tem certeza que deseja excluir? Os dados desse cliente serão perdidos para sempre\n");
             ch = getchar();
             limpaBuffer();
             if(ch == 'S' || ch == 's')
@@ -788,6 +939,23 @@ void excluirCliente()
                 printf("\nOpção inválida!!\n");
         }while(ch != 'N' && ch != 'n' && ch != 's' && ch != 'S');
     }
+    free(vetor);
+}
+
+// Função para exibir TODOS os clientes
+void exibirTodosClientes()
+{
+    int tam;
+    Cliente *vetor = lerArquivoCliente(&tam);
+
+    if(vetor != NULL)
+    {
+        for(int i = 0; i < tam; i++)
+            exibirCliente(vetor[i]);
+    }
+    else
+        printf("\nNinguém foi cadastrado ainda!!\n");
+    free(vetor);
 }
 
 int main()
@@ -815,6 +983,10 @@ int main()
             
             case 4:
                 excluirCliente();
+                break;
+
+            case 5:
+                exibirTodosClientes();
                 break;
 
             case 0:

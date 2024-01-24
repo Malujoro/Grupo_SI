@@ -101,7 +101,7 @@ int menuCliente()
 }
 
 // Função para ler um arquivo e salvar as informações em um vetor
-Cliente *lerArquivo(int *tam)
+Cliente *lerArquivoClinete(int *tam)
 {
     FILE *arquivo = abrirArquivo("clientes.txt", "r");
     Cliente aux;
@@ -358,7 +358,7 @@ void leiaEmail(char *email)
 void buscaNome()
 {
     int tam;
-    Cliente *vetor = lerArquivo(&tam);
+    Cliente *vetor = lerArquivoClinete(&tam);
 
     FILE *arquivo = abrirArquivo("clientes.txt", "r");
     char nome[TAM1];
@@ -383,7 +383,7 @@ void buscaNome()
 int buscaCPF(Cliente *pessoa)
 {
     int tam;
-    Cliente *vetor = lerArquivo(&tam);
+    Cliente *vetor = lerArquivoClinete(&tam);
 
     FILE *arquivo = abrirArquivo("clientes.txt", "r");
     char cpf[TAM2];
@@ -409,7 +409,7 @@ int buscaCPF(Cliente *pessoa)
 int buscaRG(Cliente *pessoa)
 {
     int tam;
-    Cliente *vetor = lerArquivo(&tam);
+    Cliente *vetor = lerArquivoClinete(&tam);
 
     FILE *arquivo = abrirArquivo("clientes.txt", "r");
     char rg[TAM2];
@@ -435,7 +435,7 @@ int buscaRG(Cliente *pessoa)
 int buscaTelefone(Cliente *pessoa)
 {
     int tam;
-    Cliente *vetor = lerArquivo(&tam);
+    Cliente *vetor = lerArquivoClinete(&tam);
 
     FILE *arquivo = abrirArquivo("clientes.txt", "r");
     char telefone[TAM2];
@@ -461,7 +461,7 @@ int buscaTelefone(Cliente *pessoa)
 int buscaEmail(Cliente *pessoa)
 {
     int tam;
-    Cliente *vetor = lerArquivo(&tam);
+    Cliente *vetor = lerArquivoClinete(&tam);
 
     FILE *arquivo = abrirArquivo("clientes.txt", "r");
     char email[TAM2];
@@ -488,7 +488,7 @@ int buscaEmail(Cliente *pessoa)
 void cadastrarCliente()
 {
     int tam;
-    Cliente *vetor = lerArquivo(&tam);
+    Cliente *vetor = lerArquivoClinete(&tam);
     Cliente pessoa;
     int invalido;
 
