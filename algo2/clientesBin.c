@@ -59,19 +59,47 @@ int verificaInt(char *string, int tam)
 }
 
 // Função para converter uma string em maiúsculas
-// Recebe a string usada como base e o seu tamanho. Retorna o endereço da string em maiúscula
-char *maiusc(char *string, int tam)
+// Recebe a string usada como base, a variável que vai retornar o maiúsculo e o seu tamanho. Retorna o endereço da string em maiúscula
+void maiusc(char *string, char *string2, int tam)
 {
-    char *string2 = (char *) malloc(tam * sizeof(char));
-
     for(int i = 0; i < tam; i++)
     {
         if(string[i] >= 'a' && string[i] <= 'z')
             string2[i] = string[i] - ('a' - 'A');
     }
-    
-    return string2;
 }
+
+///////////////////////////  ARQUIVO  //////////////////////////////////////////
+
+// Função para abrir arquivos
+// Recebe o nome e modo do arquivo. Retorna o endereço do arquivo
+FILE *abrirArquivo(char *nome, char *modo)
+{
+    FILE *arquivo = fopen(nome, modo);
+
+    if(arquivo == NULL)
+    {
+        printf("\nErro ao abrir o arquivo %s\n", nome);
+        exit(EXIT_FAILURE);
+    }
+    
+    return arquivo;
+}
+
+// Função para verificar se um arquivo existe
+// Recebe o nome do arquivo
+int arquivoExiste(char *nome)
+{
+    FILE *arquivo = fopen(nome, "rb");
+
+    if(arquivo == NULL)
+        return 0;
+    
+    fclose(arquivo);
+    return 1;
+}
+
+///////////////////////////  CLIENTE  //////////////////////////////////////////
 
 // Função para exibir um cliente
 // Recebe a variavel do Cliente
@@ -119,38 +147,6 @@ int menuEdit()
     return op;
 }
 
-///////////////////////////  ARQUIVO  //////////////////////////////////////////
-
-// Função para abrir arquivos
-// Recebe o nome e modo do arquivo. Retorna o endereço do arquivo
-FILE *abrirArquivo(char *nome, char *modo)
-{
-    FILE *arquivo = fopen(nome, modo);
-
-    if(arquivo == NULL)
-    {
-        printf("\nErro ao abrir o arquivo %s\n", nome);
-        exit(EXIT_FAILURE);
-    }
-    
-    return arquivo;
-}
-
-// Função para verificar se um arquivo existe
-// Recebe o nome do arquivo
-int arquivoExiste(char *nome)
-{
-    FILE *arquivo = fopen(nome, "rb");
-
-    if(arquivo == NULL)
-        return 0;
-    
-    fclose(arquivo);
-    return 1;
-}
-
-///////////////////////////  CLIENTE  //////////////////////////////////////////
-
 // Função para ler um arquivo e salvar as informações em um vetor
 // Recebe uma variável para guardar o tamanho. Retorna o endereço do vetor
 Cliente *lerArquivoCliente(int *tam)
@@ -190,8 +186,8 @@ int salvarCliente(Cliente pessoa)
         return 0;
     }
     fclose(arquivo);
-    return 1;
 
+    return 1;
 }
 
 // Função para salvar a informação editada, reescrevendo o arquivo
@@ -218,7 +214,7 @@ void leiaNome(char *nome)
     limpaBuffer();
 
     tam = strlen(nome);
-    nome = maiusc(nome, tam);
+    maiusc(nome, nome, tam);
 }
 
 // Função para ler o CPF digitado e conferir se está em um formato válido 123.456.789-00 ou 12345678900
@@ -413,7 +409,7 @@ void leiaEndereco(char *endereco)
     limpaBuffer();
 
     tam = strlen(endereco);
-    endereco = maiusc(endereco, tam);
+    maiusc(endereco, endereco, tam);
 }
 
 // Função para ler o Email do cliente
@@ -441,7 +437,7 @@ void leiaEmail(char *email)
         }
     }while(i != tam);
 
-    email = maiusc(email, tam);
+    maiusc(email, email, tam);
 }
 
 ///////////////////////////  BUSCA  //////////////////////////////////////////
