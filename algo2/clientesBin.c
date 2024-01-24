@@ -535,7 +535,7 @@ int buscaRG(Cliente *pessoa, int *pos)
         }
     }
 
-    printf("Não foi encontrado ninguém com esse CPF!!\n");
+    printf("Não foi encontrado ninguém com esse RG!!\n");
     fclose(arquivo);
     free(vetor);
     return 0;

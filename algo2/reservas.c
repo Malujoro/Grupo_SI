@@ -87,17 +87,18 @@ int verificaFloat(char *string, int tam)
     int tam2 = tam-tam1-1;
     char string1[tam1], string2[tam2];
     strncpy(string1, string, tam1);
-    // for(i = 0; i < tam1; i++)
-        // string1[i] = string[i];
 
+    // Verifica se os números antes do ponto são válidos
     if(verificaInt(string1, tam1) == 0)
         return 0;
 
     if(ponto == 1 && tam1 < tam-1)
     {
-        for(i = tam1+1; i < tam; i++)
-            string2[i] = string[i];
+		int j;
+        for(i = tam1+1, j = 0; i < tam; i++, j++)
+            string2[j] = string[i];
 
+        // Verifica se os números depois do ponto são válidos
         if(verificaInt(string2, tam2) == 0)
             return 0;
     }
