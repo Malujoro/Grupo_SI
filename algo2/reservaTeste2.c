@@ -543,7 +543,7 @@ void leiaData(char *texto, char *data)
             data[2] = '/';
 
             strncpy(data, aux, 2);
-
+            data[TAM4-1] = '\0';
             if(verificaData(data))
                 invalido = 0;
         }
@@ -551,13 +551,13 @@ void leiaData(char *texto, char *data)
         else if(verificaData(aux))
         {
             strcpy(data, aux);
+            data[TAM4-1] = '\0';
             invalido = 0;
         }
 
         if(invalido)
             printf("\nData inválida!!\n");
     }while(invalido);
-    data[TAM4-1] = '\0';
 }
 
 // Função para ler a Hora digitada e conferir se está em um formato válido 12:34 ou 1234
@@ -584,18 +584,21 @@ void leiaHora(char *texto, char *hora)
             hora[2] = ':';
 
             strncpy(hora, aux, 2);
+            hora[TAM5-1] = '\0';
             if(verificaHora(hora))
+            {
                 invalido = 0;
+            }
         }
         else if(verificaHora(aux))
         {
             strcpy(hora, aux);
+            hora[TAM5-1] = '\0';
             invalido = 0;
         }
         if(invalido)
             printf("\nHora inválida!!\n");
     }while(invalido);
-    hora[TAM5-1] = '\0';
 }
 
 ///////////////////////////  BUSCA  //////////////////////////////////////////
@@ -610,7 +613,7 @@ void leiaHora(char *texto, char *hora)
 void realizarReserva()
 {
     Reserva item;
-    int quantDias;
+    int quantDias, quantMinutos;
 
     do
     {
@@ -621,29 +624,51 @@ void realizarReserva()
             printf("\nDatas inválidas! Digite uma data de entrada menor que a data de saída\n");
     }while(quantDias < 0);
     // Exibir quartos disponíveis nessa data
-    // fazer um exibir quartos livres nesse dia
+    // fazer um exibir quartos livres nesse dia // [QUARTOS]
 
-    // leiaNumQuarto();
-    // Verificar se o cliente realmente escolheu o quarto certo // se o quarto digitado está disponível nessa data
+    // leiaNumQuarto(); // [QUARTOS]
+    // Verificar se o cliente realmente escolheu o quarto certo // se o quarto digitado está disponível nessa data [QUARTOS]
 
     // Cliente pessoa;
     //
     //  cadastrarCPF();
     //  leiaCPF();
-    //  buscaCPF();
+    //  buscaCPF(); [Provavelmente escolherei esse]
     // Utilizar o leiaCPF caso nosso hotel possa ter mais de uma reserva por CPF (provavelmente não)
     // Se bem que, acho que aqui o cliente digita o CPF e o programa busca por clientes cadastrados
     // Caso return 0, puxa o Cadastrar cliente...
-    // Na busca por cpf - ajustar o retorno de pessoa
+    // Na busca por cpf - ajustar o retorno de pessoa, para que consiga pegar retornar os dados após a busca
 
-    //  cadastrarHora();
-    //  cadastrarHora();
     // Fazer verificação para não colocar hora inválida no mesmo dia (saída antes da entrada)
-    // comparaHora();
+    do
+    {
+        leiaHora("\nHora de entrada: ", item.horaEntrada);
+        leiaHora("\nHora de saída: ", item.horaSaida);
+        quantMinutos = comparaHora(item.horaEntrada, item.horaSaida);
+        if(quantDias == 0 && quantMinutos < 0)
+            printf("\nHoras inválidas! Digite uma hora de entrada menor que a hora de saída\n");
+    }while(quantDias == 0 &&  quantMinutos < 0);
 
     //  Total; // Calcula automático - quantidade de dias * preço
     //  Pagamento; // 0 - Pendente, 1 - Pago - Geralmente é pendente | pago apenas no Realizar pagamento
+
+
     //  NumReserva; // Gera automático - Verifica se não existe antes
+    // int tam, i = 0;
+    // Reserva *vetor = lerArquivoReserva(&tam);
+    
+    // do
+    // {
+    //     item.numReserva = randitem, etc etc
+    //     if(vetor != NULL && tam > 0)
+    //     {
+    //         for(i = 0; i < tam; i++)
+    //         {
+    //             if(vetor[i]. == item.numReserva)
+    //                 break;
+    //         }
+    //     }
+    // }while(vetor != NULL && i < tam);
 
     // salvarReserva()
 }

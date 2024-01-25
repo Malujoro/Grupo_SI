@@ -25,8 +25,6 @@ int main()
         switch(op)
         {
             case 1:
-                int op2;
-
                 printf("\nNúmero: ");
                 scanf(" %d", &aux.numero);
 
