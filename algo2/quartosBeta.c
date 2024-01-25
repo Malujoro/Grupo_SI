@@ -35,11 +35,9 @@ int main()
                 printf("\n[1] - Duplo");
                 printf("\n[2] - Suíte");
                 printf("\nOpção: ");
-                // scanf(" %d", &aux.tipo);            
+                scanf(" %d", &aux.tipo);            
                 // aux.tipo = op2;
                 
-                // Ideia - Caso escolha o quarto reservado, puxar a função de realizar reserva? ou então obter a data da reserva do cara
-                // Ou melhor, deixa só podendo cadastrar status livre ou ocupado (ele se contradiz no próprio pdf)
                 printf("\nStatus");
                 printf("\n[0] - Livre");
                 printf("\n[1] - Ocupado");

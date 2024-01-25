@@ -46,6 +46,80 @@ int stringDinamica(char *string)
     return tam;
 }
 
+// Converte uma data do calendário Gregoriano para o calendário Juliano
+// Recebe os valores em gregoriana
+int gregorianaJuliana(char *grego)
+{
+    char aux[TAM4-2];
+
+    for(int i = 0, j = 0; i < TAM4-3 && j < TAM4-1; i++, j++)
+    {
+        if(grego[j] == '/')
+            j++;
+        aux[i] = grego[j];
+    }
+
+    aux[TAM4-3] = '\0';
+    int data = atoi(aux);
+
+    int dia = data / 1000000;
+    int mes = (data / 10000) - (dia * 100);
+    int ano = data % 10000;
+	int juliana;
+
+	juliana = (1461 * (ano + 4800 + (mes - 14) / 12)) / 4 + (367 * (mes - 2 - 12 * ((mes - 14) / 12))) / 12 - (3 * ((ano + 4900 + (mes - 14) / 12) / 100)) / 4 + dia - 32075;
+	
+	return juliana;
+}
+
+// Converte uma data do calendário Juliano para o calendário Gregoriano
+// Recebe o valor em juliana
+long int julianaGregoriana(int juliana)
+{
+	int b, n, k, j;
+	int dia, mes, ano;
+
+	b = juliana + 68569;
+	n = (4 * b) / 146097;
+	b = b - ((146097 * n + 3) / 4);
+	k = 4000 * (b + 1) / 1461001;
+	b = b - (1461 * k) / 4 + 31;
+	j = (80 * b) / 2447;
+	dia = b - (2447 * j) / 80;
+	b = (j / 11);
+	mes = j + 2 - (12 * b);
+	ano = 100 * (n - 49) + k + b;
+	
+	return ((dia * 1000000) + (mes * 10000) + ano);
+}
+
+int comparaData(char *entrada, char *saida)
+{
+    int data1, data2;
+
+    data1 = gregorianaJuliana(entrada);
+    data2 = gregorianaJuliana(saida);
+
+    return data2 - data1;
+}
+
+int comparaHora(char *entrada, char *saida)
+{
+    char aux[TAM5], aux2[TAM5];
+
+    int i, j;
+    for(i = 0, j = 0; i < TAM5 && j < TAM5-1; i++, j++)
+    {
+        if(entrada[j] == ':')
+            j++;
+        aux[i] = entrada[j];
+        aux2[i] = saida[j];
+    }
+    aux[i] = '\0';
+    aux2[i] = '\0';
+    return atoi(aux2) - atoi(aux);
+}
+
 // Função para verificar se uma string é composta apenas por números
 // Recebe a String a ser verificada e o seu tamanho
 int verificaInt(char *string, int tam)
@@ -118,7 +192,6 @@ int verificaHora(char *string)
         strncpy(aux, string, 2);
         aux[2] = '\0';
         x = atoi(aux);
-        printf("\n[%d][%s][%s]\n", x, aux, string);
         if(verificaInt(aux, 2) && x >= 0 && x <= 23)
         {
             for(int i = 3; i < TAM5-1; i++)
@@ -126,7 +199,6 @@ int verificaHora(char *string)
             
             aux[2] = '\0';
             x = atoi(aux);
-            printf("\n[%d]\n", x);
             if(verificaInt(aux, 2) && x >= 0 && x <= 59)
                 return 1;
         }
@@ -136,7 +208,6 @@ int verificaHora(char *string)
 
 // Função para verificar se uma data é válida
 // Recebe a String a ser verificada
-/* ============================================================================ */
 int verificaData(char *string)
 {
     char aux[4];
@@ -147,17 +218,29 @@ int verificaData(char *string)
         strncpy(aux, string, 2);
         if(verificaInt(aux, 2))
         {
+            int dia, mes, ano, data;
+            dia = atoi(aux);
             int i;
             for(i = 3; i < 5; i++)
                 aux[i-3] = string[i];
 
             if(verificaInt(aux, 2))
             {
+                mes = atoi(aux);
                 for(i = 6; i < TAM4-1; i++)
                     aux[i-6] = string[i];
                 
                 if(verificaInt(aux, 4))
-                    return 1;
+                {
+                    ano = atoi(aux);
+                    // Monta a data em uma variável, para poder verificar
+                    data = (dia * 1000000) + (mes * 10000) + ano;
+                    // Irá converter a data em juliana, e desconverter para gregoriana
+                    long int gregoriana = julianaGregoriana(gregorianaJuliana(string));
+                    // Caso a data digitada e a convertida sejam iguais, então são válidas
+                    if(data == gregoriana)
+                        return 1;
+                }
             }
         }
     }
@@ -258,16 +341,6 @@ int arquivoExiste(char *nome)
 /* ============================================================================ */
 void exibirReserva(Reserva item)
 {
-    // int numReserva;
-    // int numQuarto;
-    // char cpf[TAM2];
-    // char dataEntrada[TAM4];
-    // char dataSaida[TAM4];
-    // char horaEntrada[TAM5];
-    // char horaSaida[TAM5];
-    // float total;
-    // int pagamento; // 0 - Pendente, 1 - Pago 
-
     printf("\n----------Reserva----------");
     printf("\nNúmero de reserva: %d", item.numReserva);
     printf("\nNúmero do quarto: %d", item.numQuarto);
@@ -351,13 +424,14 @@ void refazerArquivoReserva(Reserva *vetor, int tam)
     fclose(arquivo);
 
     for(int i = 0; i < tam; i++)
-        salvarCliente(vetor[i]);
+        salvarReserva(vetor[i]);
 }
 
 ///////////////////////////  LEITURA  //////////////////////////////////////////
 
 // Função para ler o Número da reserva digitado
 // Recebe a variável que vai receber o Número da reserva
+/* ============================================================================ */
 void leiaNumReserva(int *num)
 {
     *num = leiaInt("Número da reserva: ");
@@ -365,6 +439,7 @@ void leiaNumReserva(int *num)
 
 // Função para ler o Número do quarto digitado
 // Recebe a variável que vai receber o Número do quarto
+/* ============================================================================ */
 void leiaNumQuarto(int *num)
 {
     *num = leiaInt("Número do quarto: ");
@@ -444,7 +519,7 @@ void leiaData(char *texto, char *data)
     {
         printf("%s", texto);
         scanf(" %[^\n]s", aux);
-        limpabuffer();
+        limpaBuffer();
 
         if(aux[2] == '-' || aux[2] == ' ')
             aux[2] = '/';
@@ -474,7 +549,10 @@ void leiaData(char *texto, char *data)
         }
 
         else if(verificaData(aux))
+        {
             strcpy(data, aux);
+            invalido = 0;
+        }
 
         if(invalido)
             printf("\nData inválida!!\n");
@@ -494,7 +572,7 @@ void leiaHora(char *texto, char *hora)
     {
         printf("%s", texto);
         scanf(" %[^\n]s", aux);
-        limpabuffer();
+        limpaBuffer();
 
         tam = strlen(aux);
 
@@ -506,8 +584,8 @@ void leiaHora(char *texto, char *hora)
             hora[2] = ':';
 
             strncpy(hora, aux, 2);
-            verificaHora(hora);
-            invalido = 0;
+            if(verificaHora(hora))
+                invalido = 0;
         }
         else if(verificaHora(aux))
         {
@@ -532,25 +610,36 @@ void leiaHora(char *texto, char *hora)
 void realizarReserva()
 {
     Reserva item;
-    // Cliente pessoa;
+    int quantDias;
 
-    //  cadastrarData();
-    //  cadastrarData();
-    // Fazer verificação para não colocar datas inválidas (saída antes da entrada)
+    do
+    {
+        leiaData("\nData de entrada: ", item.dataEntrada);
+        leiaData("\nData de saída: ", item.dataSaida);
+        quantDias = comparaData(item.dataEntrada, item.dataSaida);
+        if(quantDias < 0)
+            printf("\nDatas inválidas! Digite uma data de entrada menor que a data de saída\n");
+    }while(quantDias < 0);
     // Exibir quartos disponíveis nessa data
+    // fazer um exibir quartos livres nesse dia
 
-    //  cadastrarNumQuarto();
-    // Verificar se o cliente realmente escolheu o quarto certo
+    // leiaNumQuarto();
+    // Verificar se o cliente realmente escolheu o quarto certo // se o quarto digitado está disponível nessa data
+
+    // Cliente pessoa;
+    //
     //  cadastrarCPF();
     //  leiaCPF();
     //  buscaCPF();
     // Utilizar o leiaCPF caso nosso hotel possa ter mais de uma reserva por CPF (provavelmente não)
     // Se bem que, acho que aqui o cliente digita o CPF e o programa busca por clientes cadastrados
     // Caso return 0, puxa o Cadastrar cliente...
+    // Na busca por cpf - ajustar o retorno de pessoa
 
     //  cadastrarHora();
     //  cadastrarHora();
     // Fazer verificação para não colocar hora inválida no mesmo dia (saída antes da entrada)
+    // comparaHora();
 
     //  Total; // Calcula automático - quantidade de dias * preço
     //  Pagamento; // 0 - Pendente, 1 - Pago - Geralmente é pendente | pago apenas no Realizar pagamento
@@ -578,7 +667,7 @@ int main()
         switch (op)
         {
             case 1:
-                // realizarReserva();
+                realizarReserva();
                 break;
 
             case 2:
@@ -602,7 +691,7 @@ int main()
                 break;
                 
             case 7:
-                // exibirTodasReservas();    
+                // exibirTodasReservas();
                 break;
                 
             case 0:

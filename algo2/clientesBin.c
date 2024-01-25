@@ -667,13 +667,6 @@ int buscaEmail(Cliente *pessoa, int *pos)
 
 ///////////////////////////  CADASTRO  //////////////////////////////////////////
 
-// Função para cadastrar o nome
-// Recebe a variável que vai receber o nome
-void cadastrarNome(char *nome)
-{
-    leiaNome(nome);
-}
-
 // Função para cadastrar o CPF
 // Recebe a variável que vai receber o CPF
 void cadastrarCPF(char *cpf)
@@ -749,13 +742,6 @@ void cadastrarTelefone(char *telefone)
     free(vetor);
 }
 
-// Função para cadastrar o endereco
-// Recebe a variável que vai receber o endereco
-void cadastrarEndereco(char *endereco)
-{
-    leiaEndereco(endereco);
-}
-
 // Função para cadastrar o email
 // Recebe a variável que vai receber o email
 void cadastrarEmail(char *email)
@@ -788,11 +774,11 @@ void cadastrarCliente(Cliente *pessoa)
     Cliente aux;
 
     printf("\nCADASTRO DE CLIENTE\n");
-    cadastrarNome(aux.nome);
+    leiaNome(aux.nome);
     cadastrarCPF(aux.cpf);
     cadastrarRG(aux.rg);
     cadastrarTelefone(aux.telefone);
-    cadastrarEndereco(aux.endereco);
+    leiaEndereco(aux.endereco);
     cadastrarEmail(aux.email);
 
     if(salvarCliente(aux))
@@ -885,7 +871,7 @@ void editarCliente()
             switch(op)
             {
                 case 1:
-                    cadastrarNome(pessoa2.nome);
+                    leiaNome(pessoa2.nome);
                     strcpy(pessoa.nome, pessoa2.nome);
                     break;
 
@@ -905,7 +891,7 @@ void editarCliente()
                     break;
 
                 case 5:
-                    cadastrarEndereco(pessoa2.endereco);
+                    leiaEndereco(pessoa2.endereco);
                     strcpy(pessoa.endereco, pessoa2.endereco);
                     break;
 

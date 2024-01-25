@@ -534,7 +534,7 @@ int buscaEmail(Cliente *pessoa, int *pos)
 }
 
 ///////////////////////////  CADASTRO  //////////////////////////////////////////
-void cadastrarNome(char *nome)
+void leiaNome(char *nome)
 {
     leiaNome(nome);
 }
@@ -638,7 +638,7 @@ void cadastrarCliente()
     Cliente pessoa;
 
     printf("\nCADASTRO DE CLIENTE\n");
-    cadastrarNome(pessoa.nome);
+    leiaNome(pessoa.nome);
     cadastrarCPF(pessoa.cpf);
     cadastrarRG(pessoa.rg);
     cadastrarTelefone(pessoa.telefone);
@@ -717,7 +717,7 @@ void editarCliente()
             switch(op)
             {
                 case 1:
-                    cadastrarNome(pessoa2.nome);
+                    leiaNome(pessoa2.nome);
                     strcpy(pessoa.nome, pessoa2.nome);
                     break;
 
