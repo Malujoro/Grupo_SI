@@ -3,7 +3,7 @@
 #include <string.h>
 
 #define ARQCLIENTE "clientes.bin"
-#define TAM1 100 // Tamanho do Nome e Email
+#define TAM1 100 // Tamanho do Nome, Email e Endereço
 #define TAM2 15 // Tamanho do CPF e Telefone
 #define TAM3 13 // Tamanho do RG
 
@@ -207,13 +207,28 @@ void refazerArquivoCliente(Cliente *vetor, int tam)
 // Recebe a variável que vai receber o nome
 void leiaNome(char *nome)
 {
-    int tam;
+    int tam, invalido;
     
-    printf("\nNome: ");
-    scanf(" %[^\n]s", nome);
-    limpaBuffer();
+    do
+    {
+        printf("\nNome: ");
+        scanf(" %[^\n]s", nome);
+        limpaBuffer();
+        invalido = 0;
+        tam = strlen(nome);
 
-    tam = strlen(nome);
+        for(int i = 0; i < tam; i++)
+        {
+            if(nome[i] >= '0' && nome[i] <= '9')
+            {
+                invalido = 1;
+                break;
+            }
+        }
+        if(invalido)
+            printf("\nNome inválido!!\n");
+    }while(invalido);
+
     maiusc(nome, nome, tam);
 }
 
@@ -276,6 +291,7 @@ void leiaCPF(char *cpf)
         if(invalido)
             printf("\nCPF inválido!!\n");
     }while(invalido);
+    cpf[TAM2-1] = '\0';
 }
 
 // Função para ler o RG digitado e conferir se está em um formato válido 12.345.678-9 ou 123456789
@@ -334,12 +350,13 @@ void leiaRG(char *rg)
         if(invalido)
             printf("\nRG inválido!!\n");
     }while(invalido);
+    rg[TAM3-1] = '\0';
 }
 
 // Função para ler o telefone digitado e conferir se está em um formato válido (00)12345-6789 ou 00123456789 
 // Após a leitura, irá formata-lo e deixar no formato (00)12345-6789
 // Recebe a variável que vai receber o telefone
-void leiaTelefone(char *tel)
+void leiaTelefone(char *telefone)
 {
     char aux[TAM2];
     int tam, invalido = 1;
@@ -357,14 +374,14 @@ void leiaTelefone(char *tel)
         {
             invalido = 0;
             // Formata o Telefone
-            tel[0] = '(';
-            tel[3] = ')';
-            tel[9] = '-';
+            telefone[0] = '(';
+            telefone[3] = ')';
+            telefone[9] = '-';
             for(int i = 0, j = 1; i < tam; i++, j++)
             {
                 if(j == 3 || j == 9)
                     j++;
-                tel[j] = aux[i];
+                telefone[j] = aux[i];
             }
         }
         // Caso em que o Telefone foi digitado completo, verificar se é válido - 123.456.789-00
@@ -389,13 +406,13 @@ void leiaTelefone(char *tel)
             if(verificaInt(aux2, TAM2-4) && aux[0] == '(' && aux[3] == ')' && aux[9] == '-')
             {
                 invalido = 0;
-                strcpy(tel, aux);
+                strcpy(telefone, aux);
             }
         }
         if(invalido)
             printf("\nTelefone inválido!!\n");
     }while(invalido);
-    
+    telefone[TAM2-1] = '\0';
 }
 
 // Função para ler o endereço do cliente
@@ -417,19 +434,26 @@ void leiaEndereco(char *endereco)
 // Recebe a variável que vai receber o Email
 void leiaEmail(char *email)
 {
-    int tam, i;
+    int tam, i, arroba;
 
     do
     {
+        arroba = 0;
         printf("\nE-mail: ");
         scanf(" %[^\n]s", email);
         limpaBuffer();
         tam = strlen(email);
         for(i = 0; i < tam; i++)
         {
-            // if(email[i] == ' ')
+            if(email[i] == '@')
+                arroba++;
+            if(arroba > 1)
+                break;
+        }
+        for(i = 0; i < tam; i++)
+        {
             // Blindagem para o email aceitar apenas caracteres, números e os símbolos @ _ .
-            if(email[i] != '_' && email[i] != '@' && email[i] != '.' && (email[i] < 'a' || email[i] > 'z') && (email[i] < 'A' || email[i] > 'Z') && (email[i] < '0' || email[i] > '9'))
+            if(arroba != 1 || (email[i] != '_' && email[i] != '@' && email[i] != '.' && (email[i] < 'a' || email[i] > 'z') && (email[i] < 'A' || email[i] > 'Z') && (email[i] < '0' || email[i] > '9')))
             {
                 printf("\nEmail Inválido!!\n");
                 break;
@@ -520,7 +544,7 @@ int buscaRG(Cliente *pessoa, int *pos)
     Cliente *vetor = lerArquivoCliente(&tam);
 
     FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
-    char rg[TAM2];
+    char rg[TAM3];
 
     leiaRG(rg);
     printf("\nBuscando por CPF: [%s]...\n", rg);
@@ -620,7 +644,7 @@ int buscaEmail(Cliente *pessoa, int *pos)
     Cliente *vetor = lerArquivoCliente(&tam);
 
     FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
-    char email[TAM2];
+    char email[TAM1];
 
     leiaEmail(email);
     printf("\nBuscando por Email: [%s]...\n", email);
@@ -782,7 +806,7 @@ int consultarCliente(Cliente *pessoa, int *pos)
 {
     int op, tam;
     Cliente *vetor = lerArquivoCliente(&tam);
-    if(vetor != NULL)
+    if(vetor != NULL && tam > 0)
     {
         do
         {
@@ -944,7 +968,7 @@ void exibirTodosClientes()
     int tam;
     Cliente *vetor = lerArquivoCliente(&tam);
 
-    if(vetor != NULL)
+    if(vetor != NULL && tam > 0)
     {
         for(int i = 0; i < tam; i++)
             exibirCliente(vetor[i]);
@@ -956,7 +980,8 @@ void exibirTodosClientes()
 
 int main()
 {
-    int op;
+    int op, tam;
+    Cliente pessoa;
 
     do
     {
@@ -968,8 +993,6 @@ int main()
                 break;
             
             case 2:
-                Cliente pessoa;
-                int tam;
                 consultarCliente(&pessoa, &tam);
                 break;
 
