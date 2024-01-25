@@ -783,20 +783,23 @@ void cadastrarEmail(char *email)
 
 ///////////////////////////  ESTRUTURA  //////////////////////////////////////////
 // Função para CADASTRAR cliente
-void cadastrarCliente()
+void cadastrarCliente(Cliente *pessoa)
 {
-    Cliente pessoa;
+    Cliente aux;
 
     printf("\nCADASTRO DE CLIENTE\n");
-    cadastrarNome(pessoa.nome);
-    cadastrarCPF(pessoa.cpf);
-    cadastrarRG(pessoa.rg);
-    cadastrarTelefone(pessoa.telefone);
-    cadastrarEndereco(pessoa.endereco);
-    cadastrarEmail(pessoa.email);
+    cadastrarNome(aux.nome);
+    cadastrarCPF(aux.cpf);
+    cadastrarRG(aux.rg);
+    cadastrarTelefone(aux.telefone);
+    cadastrarEndereco(aux.endereco);
+    cadastrarEmail(aux.email);
 
-    if(salvarCliente(pessoa))
+    if(salvarCliente(aux))
+    {
         printf("\nCliente cadastrado com sucesso!\n");
+        *pessoa = aux;
+    }
 
 }
 
@@ -989,7 +992,7 @@ int main()
         switch(op)
         {
             case 1:
-                cadastrarCliente();
+                cadastrarCliente(&pessoa);
                 break;
             
             case 2:
