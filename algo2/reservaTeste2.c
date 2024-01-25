@@ -258,15 +258,15 @@ int arquivoExiste(char *nome)
 /* ============================================================================ */
 void exibirReserva(Reserva item)
 {
-    int numReserva;
-    int numQuarto;
-    char cpf[TAM2];
-    char dataEntrada[TAM4];
-    char dataSaida[TAM4];
-    char horaEntrada[TAM5];
-    char horaSaida[TAM5];
-    float total;
-    int pagamento; // 0 - Pendente, 1 - Pago 
+    // int numReserva;
+    // int numQuarto;
+    // char cpf[TAM2];
+    // char dataEntrada[TAM4];
+    // char dataSaida[TAM4];
+    // char horaEntrada[TAM5];
+    // char horaSaida[TAM5];
+    // float total;
+    // int pagamento; // 0 - Pendente, 1 - Pago 
 
     printf("\n----------Reserva----------");
     printf("\nNúmero de reserva: %d", item.numReserva);
@@ -356,11 +356,15 @@ void refazerArquivoReserva(Reserva *vetor, int tam)
 
 ///////////////////////////  LEITURA  //////////////////////////////////////////
 
+// Função para ler o Número da reserva digitado
+// Recebe a variável que vai receber o Número da reserva
 void leiaNumReserva(int *num)
 {
     *num = leiaInt("Número da reserva: ");
 }
 
+// Função para ler o Número do quarto digitado
+// Recebe a variável que vai receber o Número do quarto
 void leiaNumQuarto(int *num)
 {
     *num = leiaInt("Número do quarto: ");
@@ -428,6 +432,9 @@ void leiaCPF(char *cpf)
     cpf[TAM2-1] = '\0';
 }
 
+// Função para ler a Data digitada e conferir se está em um formato válido 12/34/5678 ou 12345678
+// Após a leitura, irá formatá-la e deixar no formato 12/34/5678
+// Recebe o texto a ser exibido e a variável que vai receber a data
 void leiaData(char *texto, char *data)
 {
     int tam, invalido = 1;
@@ -437,6 +444,7 @@ void leiaData(char *texto, char *data)
     {
         printf("%s", texto);
         scanf(" %[^\n]s", aux);
+        limpabuffer();
 
         if(aux[2] == '-' || aux[2] == ' ')
             aux[2] = '/';
@@ -474,6 +482,9 @@ void leiaData(char *texto, char *data)
     data[TAM4-1] = '\0';
 }
 
+// Função para ler a Hora digitada e conferir se está em um formato válido 12:34 ou 1234
+// Após a leitura, irá formatá-la e deixar no formato 12:34
+// Recebe o texto a ser exibido e a variável que vai receber a hora
 void leiaHora(char *texto, char *hora)
 {
     char aux[TAM5];
@@ -483,6 +494,7 @@ void leiaHora(char *texto, char *hora)
     {
         printf("%s", texto);
         scanf(" %[^\n]s", aux);
+        limpabuffer();
 
         tam = strlen(aux);
 
@@ -510,6 +522,7 @@ void leiaHora(char *texto, char *hora)
 
 ///////////////////////////  BUSCA  //////////////////////////////////////////
 
+// Código de reserva ou nome
 
 ///////////////////////////  CADASTRO  //////////////////////////////////////////
 
@@ -519,25 +532,38 @@ void leiaHora(char *texto, char *hora)
 void realizarReserva()
 {
     Reserva item;
+    // Cliente pessoa;
+
+    //  cadastrarData();
+    //  cadastrarData();
+    // Fazer verificação para não colocar datas inválidas (saída antes da entrada)
+    // Exibir quartos disponíveis nessa data
 
     //  cadastrarNumQuarto();
+    // Verificar se o cliente realmente escolheu o quarto certo
     //  cadastrarCPF();
-    //  cadastrarData();
-    //  cadastrarData();
+    //  leiaCPF();
+    //  buscaCPF();
+    // Utilizar o leiaCPF caso nosso hotel possa ter mais de uma reserva por CPF (provavelmente não)
+    // Se bem que, acho que aqui o cliente digita o CPF e o programa busca por clientes cadastrados
+    // Caso return 0, puxa o Cadastrar cliente...
 
     //  cadastrarHora();
     //  cadastrarHora();
+    // Fazer verificação para não colocar hora inválida no mesmo dia (saída antes da entrada)
 
-    //  Total; // Calcula automático
-    //  Pagamento; // 0 - Pendente, 1 - Pago - Geralmente é pendente
-    //  NumReserva; // Gera automático
+    //  Total; // Calcula automático - quantidade de dias * preço
+    //  Pagamento; // 0 - Pendente, 1 - Pago - Geralmente é pendente | pago apenas no Realizar pagamento
+    //  NumReserva; // Gera automático - Verifica se não existe antes
 
     // salvarReserva()
 }
+
+// void consultarReservas();
+// Mudar o Quarto para ocupado \/
 // void excluirReserva();
 // void realizarCheckin();
 // void realizarPagamento();
-// void consultarReservas();
 // void valoresRecebidos();
 // void exibirTodasReservas();
 
