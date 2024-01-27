@@ -68,9 +68,23 @@ int main()
 
                 for(int i = 0; i < tam; i++)
                 {
+                    printf("\n----------Quarto----------");
                     printf("\nQuarto %d", vetor[i].numero);
-                    printf("\nTipo %d", vetor[i].tipo);
-                    printf("\nStatus %d", vetor[i].status);
+
+                    if(vetor[i].tipo == 0)
+                        printf("\nTipo Simples");
+                    else if(vetor[i].tipo == 1)
+                        printf("\nTipo Duplo");
+                    else if(vetor[i].tipo == 2)
+                        printf("\nTipo Suíte");
+
+                    if(vetor[i].status == 0)
+                        printf("\nStatus Livre");
+                    else if(vetor[i].status == 1)
+                        printf("\nStatus Ocupado");
+                    else if(vetor[i].status == 2)
+                        printf("\nStatus Reservado");
+
                     printf("\nValor %.2f\n", vetor[i].valor);
                 }
 

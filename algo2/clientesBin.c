@@ -132,7 +132,7 @@ int menuCliente()
 
 // Função para exibir o menu de opções para buscar/editar
 // Retorna a opção escolhida
-int menuEdit()
+int menuEditCliente()
 {
     int op;
     printf("\n[1] - Nome");
@@ -469,12 +469,11 @@ void leiaEmail(char *email)
 
 // Função para buscar um cliente pelo Nome
 // Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
-int buscaNome(Cliente *pessoa, int *pos)
+int buscaNomeCliente(Cliente *pessoa, int *pos)
 {
     int tam;
     Cliente *vetor = lerArquivoCliente(&tam);
 
-    FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
     char nome[TAM1];
     char ch;
 
@@ -504,7 +503,6 @@ int buscaNome(Cliente *pessoa, int *pos)
         }
     }
     printf("Não foi encontrado ninguém com esse nome!!\n");
-    fclose(arquivo);
     free(vetor);
     return 0;
 }
@@ -516,7 +514,6 @@ int buscaCPF(Cliente *pessoa, int *pos)
     int tam;
     Cliente *vetor = lerArquivoCliente(&tam);
 
-    FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
     char cpf[TAM2];
 
     leiaCPF(cpf);
@@ -533,7 +530,6 @@ int buscaCPF(Cliente *pessoa, int *pos)
         }
     }
     printf("Não foi encontrado ninguém com esse CPF!!\n");
-    fclose(arquivo);
     free(vetor);
     return 0;
 }
@@ -545,7 +541,6 @@ int buscaRG(Cliente *pessoa, int *pos)
     int tam;
     Cliente *vetor = lerArquivoCliente(&tam);
 
-    FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
     char rg[TAM3];
 
     leiaRG(rg);
@@ -562,7 +557,6 @@ int buscaRG(Cliente *pessoa, int *pos)
     }
 
     printf("Não foi encontrado ninguém com esse RG!!\n");
-    fclose(arquivo);
     free(vetor);
     return 0;
 }
@@ -574,7 +568,6 @@ int buscaTelefone(Cliente *pessoa, int *pos)
     int tam;
     Cliente *vetor = lerArquivoCliente(&tam);
 
-    FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
     char telefone[TAM2];
 
     leiaTelefone(telefone);
@@ -591,7 +584,6 @@ int buscaTelefone(Cliente *pessoa, int *pos)
     }
 
     printf("Não foi encontrado ninguém com esse Telefone!!\n");
-    fclose(arquivo);
     free(vetor);
     return 0;
 }
@@ -603,7 +595,6 @@ int buscaEndereco(Cliente *pessoa, int *pos)
     int tam;
     Cliente *vetor = lerArquivoCliente(&tam);
 
-    FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
     char endereco[TAM1];
     char ch;
 
@@ -633,7 +624,6 @@ int buscaEndereco(Cliente *pessoa, int *pos)
         }
     }
     printf("Não foi encontrado ninguém com esse endereço!!\n");
-    fclose(arquivo);
     free(vetor);
     return 0;
 }
@@ -645,7 +635,6 @@ int buscaEmail(Cliente *pessoa, int *pos)
     int tam;
     Cliente *vetor = lerArquivoCliente(&tam);
 
-    FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
     char email[TAM1];
 
     leiaEmail(email);
@@ -662,7 +651,6 @@ int buscaEmail(Cliente *pessoa, int *pos)
     }
 
     printf("Não foi encontrado ninguém com esse Email!!\n");
-    fclose(arquivo);
     free(vetor);
     return 0;
 }
@@ -805,12 +793,12 @@ int consultarCliente(Cliente *pessoa, int *pos)
         do
         {
             printf("\n-----Buscar cliente por:-----");
-            op = menuEdit();
+            op = menuEditCliente();
 
             switch(op)
             {
                 case 1:
-                    if(buscaNome(pessoa, pos) == 0)
+                    if(buscaNomeCliente(pessoa, pos) == 0)
                         op = 0;
                     break;
 
@@ -852,7 +840,7 @@ int consultarCliente(Cliente *pessoa, int *pos)
                     break;
 
                 default:
-                    break;
+                    printf("\nOpção inválida!\n");
             }
         }while(op < 0 || op > 6);
         return op;
@@ -872,7 +860,7 @@ void editarCliente()
         do
         {
             printf("\n-----Editar-----");
-            op = menuEdit();
+            op = menuEditCliente();
             switch(op)
             {
                 case 1:
@@ -909,7 +897,7 @@ void editarCliente()
                     break;
 
                 default:
-                    break;
+                    printf("\nOpção inválida!\n");
             }
         }while(op < 0 || op > 6);
 
@@ -979,7 +967,7 @@ void exibirTodosClientes()
 
 int main()
 {
-    int op, tam;
+    int op, pos;
     Cliente pessoa;
 
     do
@@ -992,7 +980,7 @@ int main()
                 break;
             
             case 2:
-                consultarCliente(&pessoa, &tam);
+                consultarCliente(&pessoa, &pos);
                 break;
 
             case 3:

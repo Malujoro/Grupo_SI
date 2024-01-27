@@ -92,7 +92,7 @@ int menuCliente()
 }
 
 // Função para exibir o menu de opções para editar
-int menuEdit()
+int menuEditCliente()
 {
     int op;
     printf("\n[1] - Nome");
@@ -718,7 +718,7 @@ void editarCliente()
         do
         {
             printf("\n-----Editar-----");
-            op = menuEdit();
+            op = menuEditCliente();
             switch(op)
             {
                 case 1:
