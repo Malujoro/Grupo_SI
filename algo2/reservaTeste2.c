@@ -2,10 +2,25 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define ARQCLIENTE "clientes.bin"
 #define ARQRESERVA "reservas.bin"
+
+#define TAM1 100 // Tamanho do Nome, Email e Endereço
 #define TAM2 15 // Tamanho do CPF e Telefone
+#define TAM3 13 // Tamanho do RG
 #define TAM4 11 // Tamanho das datas 00/00/0000
 #define TAM5 6 // Tamanho das horas 00:00
+
+typedef struct
+{
+    char nome[TAM1];
+    char cpf[TAM2]; // 123.456.789-00
+    char rg[TAM3];  // 12.345.678-9
+    char telefone[TAM2]; // (00)12345-6789
+    char endereco[TAM1];
+    char email[TAM1];
+} Cliente;
+
 
 typedef struct
 {
@@ -47,7 +62,7 @@ int stringDinamica(char *string)
 }
 
 // Converte uma data do calendário Gregoriano para o calendário Juliano
-// Recebe os valores em gregoriana
+// Recebe os valores em string gregoriana 12/34/5678. Retorna o valor em juliana
 int gregorianaJuliana(char *grego)
 {
     char aux[TAM4-2];
@@ -73,7 +88,7 @@ int gregorianaJuliana(char *grego)
 }
 
 // Converte uma data do calendário Juliano para o calendário Gregoriano
-// Recebe o valor em juliana
+// Recebe o valor em juliana. Retorna os valores em data gregoriana 12345678 (12/34/5678)
 long int julianaGregoriana(int juliana)
 {
 	int b, n, k, j;
@@ -93,6 +108,8 @@ long int julianaGregoriana(int juliana)
 	return ((dia * 1000000) + (mes * 10000) + ano);
 }
 
+// Compara se a diferença entre a data de entrada e de saída é válida
+// Recebe as strings de entrada e saída
 int comparaData(char *entrada, char *saida)
 {
     int data1, data2;
@@ -103,6 +120,8 @@ int comparaData(char *entrada, char *saida)
     return data2 - data1;
 }
 
+// Compara se a diferença entre a hora de entrada e de saída é válida (caso seja no mesmo dia)
+// Recebe as strings de entrada e saída
 int comparaHora(char *entrada, char *saida)
 {
     char aux[TAM5], aux2[TAM5];
@@ -184,9 +203,48 @@ int verificaFloat(char *string, int tam)
 // Recebe a String a ser verificada
 int verificaHora(char *string)
 {
-    int x, tam = strlen(string);
-    char aux[3];
+    int x, i, tam = strlen(string);
+    char aux[3], pos;
 
+    for(int i = 0; i < tam; i++)
+    {
+        if(string[i] == ':')
+        {
+            pos = i;
+            break;
+        }
+    }
+    // Formatando horas nos formatos 1:23 e 12:3 para 01:23 e 12:03
+    if(tam == 4 && (pos == 1 || pos == 2))
+    {
+        if(pos == 1)
+        {
+            for(i = tam-1; i >= 0; i--)
+                string[i+1] = string[i];
+            string[0] = '0';
+        }
+        else if(pos == 2)
+        {
+            string[4] = string[3];
+            string[3] = '0';
+        }
+
+        string[5] = '\0';
+        tam++;
+    }
+    // Formatando horas nos formatos 1:2 01:02
+    else if(tam == 3 && pos == 1)
+    {
+        for(i = tam-1; i >= 0; i--)
+            string[i+1] = string[i];
+        string[4] = string[3];
+        string[0] = '0';
+        string[3] = '0';
+        string[5] = '\0';
+        tam = 5;
+    }
+
+    // Verifica se o horário é válido
     if(tam == TAM5-1 && string[2] == ':')
     {
         strncpy(aux, string, 2);
@@ -194,7 +252,7 @@ int verificaHora(char *string)
         x = atoi(aux);
         if(verificaInt(aux, 2) && x >= 0 && x <= 23)
         {
-            for(int i = 3; i < TAM5-1; i++)
+            for(i = 3; i < TAM5-1; i++)
                 aux[i-3] = string[i];
             
             aux[2] = '\0';
@@ -376,6 +434,33 @@ int menuReserva()
 
 // Função para ler um arquivo e salvar as informações em um vetor
 // Recebe uma variável para guardar o tamanho. Retorna o endereço do vetor
+Cliente *lerArquivoCliente(int *tam)
+{
+    if(arquivoExiste(ARQCLIENTE))
+    {
+        FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
+        Cliente aux;
+
+
+        Cliente *vetor = (Cliente *) malloc(sizeof(Cliente));
+        *tam = 0;
+        while(fread(&aux, sizeof(Cliente), 1, arquivo) == 1)
+        {
+            vetor[*tam] = aux;
+            (*tam)++;
+            // Aumenta o tamanho do vetor dinamicamente
+            vetor = realloc(vetor, ((*tam) + 1) * sizeof(Cliente));
+        }
+        fclose(arquivo);
+
+        return vetor;
+    }
+    *tam = -1;
+    return NULL;
+}
+
+// Função para ler um arquivo e salvar as informações em um vetor
+// Recebe uma variável para guardar o tamanho. Retorna o endereço do vetor
 Reserva *lerArquivoReserva(int *tam)
 {
     if(arquivoExiste(ARQRESERVA))
@@ -398,6 +483,22 @@ Reserva *lerArquivoReserva(int *tam)
     }
     *tam = -1;
     return NULL;
+}
+
+// Função para salvar as informações do cliente em um arquivo
+// Recebe a variável da pessoa
+int salvarCliente(Cliente pessoa)
+{
+    FILE *arquivo = abrirArquivo(ARQCLIENTE, "ab");
+
+    if(fwrite(&pessoa, sizeof(Cliente), 1, arquivo) < 1)
+    {
+        printf("\nErro! Não foi possível salvar as informações\n");
+        return 0;
+    }
+    fclose(arquivo);
+
+    return 1;
 }
 
 // Função para salvar as informações do cliente em um arquivo
@@ -445,12 +546,42 @@ void leiaNumQuarto(int *num)
     *num = leiaInt("Número do quarto: ");
 }
 
+/* ==============Sugestão - Usar o stringDinâmica para pegar os itens dos Leia ================= */
+// Função para ler o nome do cliente
+// Recebe a variável que vai receber o nome
+void leiaNome(char *nome)
+{
+    int tam, invalido;
+    
+    do
+    {
+        printf("\nNome: ");
+        scanf(" %[^\n]s", nome);
+        limpaBuffer();
+        invalido = 0;
+        tam = strlen(nome);
+
+        for(int i = 0; i < tam; i++)
+        {
+            if(nome[i] >= '0' && nome[i] <= '9')
+            {
+                invalido = 1;
+                break;
+            }
+        }
+        if(invalido)
+            printf("\nNome inválido!!\n");
+    }while(invalido);
+
+    maiusc(nome, nome, tam);
+}
+
 // Função para ler o CPF digitado e conferir se está em um formato válido 123.456.789-00 ou 12345678900
 // Após a leitura, irá formata-lo e deixar no formato 123.456.789-00
 // Recebe a variável que vai receber o CPF
 void leiaCPF(char *cpf)
 {
-    char aux[TAM2];
+    char aux[TAM1];
     int tam, invalido = 1;
 
     do
@@ -505,6 +636,176 @@ void leiaCPF(char *cpf)
             printf("\nCPF inválido!!\n");
     }while(invalido);
     cpf[TAM2-1] = '\0';
+}
+
+// Função para ler o RG digitado e conferir se está em um formato válido 12.345.678-9 ou 123456789
+// Após a leitura, irá formata-lo e deixar no formato 12.345.678-9
+// Recebe a variável que vai receber o RG
+void leiaRG(char *rg)
+{
+    char aux[TAM1];
+    int tam, invalido = 1;
+
+    do
+    {
+        printf("\nRG: ");
+        scanf(" %[^\n]s", aux);
+        limpaBuffer();
+
+        tam = strlen(aux);
+
+        // Caso em que foi digitado apenas o RG numérico - 123456789
+        if((tam == TAM3-4) && verificaInt(aux, TAM3-4))
+        {
+            invalido = 0;
+            // Formata o RG
+            rg[2] = '.';
+            rg[6] = '.';
+            rg[10] = '-';
+            for(int i = 0, j = 0; i < tam; i++, j++)
+            {
+                if(j == 2 || j == 6 || j == 10)
+                    j++;
+                rg[j] = aux[i];
+            }
+        }
+        // Caso em que o RG foi digitado completo, verifica se é válido - 12.345.678-9
+        else if(tam == TAM3-1)
+        {
+            // Verifica se os os números e símbolos estão na posição certa
+            char aux2[TAM3-4];
+            for(int i = 0, j = 0; i < tam; i++)
+            {
+                // Cria um vetor auxiliar apenas com os números
+                if(j != 2 && j != 6 && j != 10)
+                {
+                    aux2[j] = aux[i];
+                    j++;
+                }
+            }
+
+            // Executa a verificação final se está formatado corretamente
+            if(verificaInt(aux2, TAM3-4) && aux[2] == '.' && aux[6] == '.' && aux[10] == '-')
+            {
+                invalido = 0;
+                strcpy(rg, aux);
+            }
+        }
+        if(invalido)
+            printf("\nRG inválido!!\n");
+    }while(invalido);
+    rg[TAM3-1] = '\0';
+}
+
+// Função para ler o telefone digitado e conferir se está em um formato válido (00)12345-6789 ou 00123456789 
+// Após a leitura, irá formata-lo e deixar no formato (00)12345-6789
+// Recebe a variável que vai receber o telefone
+void leiaTelefone(char *telefone)
+{
+    char aux[TAM1];
+    int tam, invalido = 1;
+
+    do
+    {
+        printf("\nTelefone: ");
+        scanf(" %[^\n]s", aux);
+        limpaBuffer();
+
+        tam = strlen(aux);
+
+        // Caso em que foi digitado apenas o Telefone numérico - 00123456789
+        if((tam == TAM2-4) && verificaInt(aux, TAM2-4))
+        {
+            invalido = 0;
+            // Formata o Telefone
+            telefone[0] = '(';
+            telefone[3] = ')';
+            telefone[9] = '-';
+            for(int i = 0, j = 1; i < tam; i++, j++)
+            {
+                if(j == 3 || j == 9)
+                    j++;
+                telefone[j] = aux[i];
+            }
+        }
+        // Caso em que o Telefone foi digitado completo, verificar se é válido - 123.456.789-00
+        else if(tam == TAM2-1)
+        {
+            // Verifica se os números e símbolos estão na posição certa
+            char aux2[TAM2-4];
+            for(int i = 1, j = 0; i < tam; i++)
+            {
+                // Cria um vetor auxiliar apenas com os números
+                if(i != 3 && i != 9)
+                {
+                    aux2[j] = aux[i];
+                    j++;
+                }
+            }
+            // Efetua a troca caso o telefone digitado contenha um espaço, para uma melhor estética
+            if(aux[9] == ' ')
+                aux[9] = '-';
+
+            // Executa a verificação final se está formatado corretamente
+            if(verificaInt(aux2, TAM2-4) && aux[0] == '(' && aux[3] == ')' && aux[9] == '-')
+            {
+                invalido = 0;
+                strcpy(telefone, aux);
+            }
+        }
+        if(invalido)
+            printf("\nTelefone inválido!!\n");
+    }while(invalido);
+    telefone[TAM2-1] = '\0';
+}
+
+// Função para ler o endereço do cliente
+// Recebe a variável que vai receber o endereço
+void leiaEndereco(char *endereco)
+{
+    int tam;
+    
+    printf("\nEndereço: ");
+    scanf(" %[^\n]s", endereco);
+    limpaBuffer();
+
+    tam = strlen(endereco);
+    maiusc(endereco, endereco, tam);
+}
+
+// Função para ler o Email do cliente
+// Não permite espaços, símbolos e acentuações no Email
+// Recebe a variável que vai receber o Email
+void leiaEmail(char *email)
+{
+    int tam, i, arroba;
+
+    do
+    {
+        arroba = 0;
+        printf("\nE-mail: ");
+        scanf(" %[^\n]s", email);
+        limpaBuffer();
+        tam = strlen(email);
+        for(i = 0; i < tam; i++)
+        {
+            if(email[i] == '@')
+                arroba++;
+            if(arroba > 1)
+                break;
+        }
+        for(i = 0; i < tam; i++)
+        {
+            // Blindagem para o email aceitar apenas caracteres, números e os símbolos @ _ .
+            if(arroba != 1 || (email[i] != '_' && email[i] != '@' && email[i] != '.' && (email[i] < 'a' || email[i] > 'z') && (email[i] < 'A' || email[i] > 'Z') && (email[i] < '0' || email[i] > '9')))
+            {
+                printf("\nEmail Inválido!!\n");
+                break;
+            }
+        }
+    }while(i != tam);
+
+    maiusc(email, email, tam);
 }
 
 // Função para ler a Data digitada e conferir se está em um formato válido 12/34/5678 ou 12345678
@@ -601,19 +902,172 @@ void leiaHora(char *texto, char *hora)
     }while(invalido);
 }
 
+// Leia numQuarto
+
 ///////////////////////////  BUSCA  //////////////////////////////////////////
+
+int buscaCPF(Cliente *pessoa, int *pos)
+{
+    int tam;
+    Cliente *vetor = lerArquivoCliente(&tam);
+
+    FILE *arquivo = abrirArquivo(ARQCLIENTE, "rb");
+    char cpf[TAM2];
+
+    leiaCPF(cpf);
+    strcpy(pessoa->cpf, cpf);
+    printf("\nBuscando por CPF: [%s]...\n", cpf);
+
+    for(int i = 0; i < tam; i++)
+    {
+        if(strcmp(cpf, vetor[i].cpf) == 0)
+        {
+            *pos = i;
+            *pessoa = vetor[i];
+            return 1;
+        }
+    }
+    printf("Não foi encontrado ninguém com esse CPF!!\n");
+    fclose(arquivo);
+    free(vetor);
+    return 0;
+}
 
 // Código de reserva ou nome
 
 ///////////////////////////  CADASTRO  //////////////////////////////////////////
 
+// Função para cadastrar o CPF
+// Recebe a variável que vai receber o CPF
+void cadastrarCPF(char *cpf)
+{
+    int tam;
+    Cliente *vetor = lerArquivoCliente(&tam);
+
+    int invalido;
+    do
+    {
+        leiaCPF(cpf);
+        invalido = 0;
+        for(int i = 0; i < tam; i++)
+        {
+            if(strcmp(vetor[i].cpf, cpf) == 0)
+            {
+                invalido = 1;
+                printf("\nErro! CPF já cadastrado\n");
+                break;
+            }
+        }
+    }while(invalido);
+    free(vetor);
+}
+
+// Função para cadastrar o RG
+// Recebe a variável que vai receber o RG
+void cadastrarRG(char *rg)
+{
+    int tam;
+    Cliente *vetor = lerArquivoCliente(&tam);
+
+    int invalido;
+    do
+    {
+        leiaRG(rg);
+        invalido = 0;
+        for(int i = 0; i < tam; i++)
+        {
+            if(strcmp(vetor[i].rg, rg) == 0)
+            {
+                invalido = 1;
+                printf("\nErro! RG já cadastrado\n");
+                break;
+            }
+        }
+    }while(invalido);
+    free(vetor);
+}
+
+// Função para cadastrar o telefone
+// Recebe a variável que vai receber o telefone
+void cadastrarTelefone(char *telefone)
+{
+    int tam;
+    Cliente *vetor = lerArquivoCliente(&tam);
+
+    int invalido;
+    do
+    {
+        leiaTelefone(telefone);
+        invalido = 0;
+        for(int i = 0; i < tam; i++)
+        {
+            if(strcmp(vetor[i].telefone, telefone) == 0)
+            {
+                invalido = 1;
+                printf("\nErro! Telefone já cadastrado\n");
+                break;
+            }
+        }
+    }while(invalido);
+    free(vetor);
+}
+
+// Função para cadastrar o email
+// Recebe a variável que vai receber o email
+void cadastrarEmail(char *email)
+{
+    int tam;
+    Cliente *vetor = lerArquivoCliente(&tam);
+
+    int invalido;
+    do
+    {
+        leiaEmail(email);
+        invalido = 0;
+        for(int i = 0; i < tam; i++)
+        {
+            if(strcmp(vetor[i].email, email) == 0)
+            {
+                invalido = 1;
+                printf("\nErro! Email já cadastrado\n");
+                break;
+            }
+        }
+    }while(invalido);
+    free(vetor);
+}
+
+// Função para CADASTRAR cliente
+void cadastrarCliente(Cliente *pessoa, int cpf)
+{
+    Cliente aux;
+
+    printf("\nCADASTRO DE CLIENTE\n");
+    leiaNome(aux.nome);
+    if(cpf == 0)
+        cadastrarCPF(aux.cpf);
+    else
+        strcpy(aux.cpf, pessoa->cpf);
+    cadastrarRG(aux.rg);
+    cadastrarTelefone(aux.telefone);
+    leiaEndereco(aux.endereco);
+    cadastrarEmail(aux.email);
+
+    if(salvarCliente(aux))
+    {
+        printf("\nCliente cadastrado com sucesso!\n");
+        *pessoa = aux;
+    }
+}
 
 ///////////////////////////  ESTRUTURA  //////////////////////////////////////////
 
-void realizarReserva()
+int realizarReserva()
 {
     Reserva item;
+    Cliente pessoa;
     int quantDias, quantMinutos;
+    int pos;
 
     do
     {
@@ -623,21 +1077,41 @@ void realizarReserva()
         if(quantDias < 0)
             printf("\nDatas inválidas! Digite uma data de entrada menor que a data de saída\n");
     }while(quantDias < 0);
+    
+    // Não sei se irá permitir a troca da data, ou então apenas um looping para ele escolher um quarto válido
     // Exibir quartos disponíveis nessa data
     // fazer um exibir quartos livres nesse dia // [QUARTOS]
+    // Caso não exista nenhum quarto, finaliza a tentativa de reserva?
 
     // leiaNumQuarto(); // [QUARTOS]
     // Verificar se o cliente realmente escolheu o quarto certo // se o quarto digitado está disponível nessa data [QUARTOS]
 
-    // Cliente pessoa;
-    //
-    //  cadastrarCPF();
-    //  leiaCPF();
-    //  buscaCPF(); [Provavelmente escolherei esse]
-    // Utilizar o leiaCPF caso nosso hotel possa ter mais de uma reserva por CPF (provavelmente não)
-    // Se bem que, acho que aqui o cliente digita o CPF e o programa busca por clientes cadastrados
-    // Caso return 0, puxa o Cadastrar cliente...
-    // Na busca por cpf - ajustar o retorno de pessoa, para que consiga pegar retornar os dados após a busca
+    // Utilizar o leiaCPF caso nosso hotel possa ter mais de uma reserva por CPF
+    // (Não sei se precisa de blindagem pra pessoa reservar mais de um quarto )
+    // CPF é digitado e o programa busca por clientes cadastrados
+    // Caso não esteja, cadastra o cliente
+    if(buscaCPF(&pessoa, &pos) == 0)
+    {
+        char ch;
+        do
+        {
+            printf("\nVocê não está cadastrado. Deseja se cadastrar?\n");
+            ch = getchar();
+            limpaBuffer();
+            if(ch == 'S' || ch == 's')
+                cadastrarCliente(&pessoa, 1);
+            else if (ch == 'N' || ch == 'n')
+            {
+                printf("\nCancelando reserva...\n");
+                return 0;
+            }
+            else
+                printf("\nOpção inválida!!\n");
+        }while(ch != 'N' && ch != 'n' && ch != 'S' && ch != 's');
+    }
+    else
+        printf("\nCliente já está cadastrado\n");
+    strcpy(item.cpf, pessoa.cpf);
 
     // Fazer verificação para não colocar hora inválida no mesmo dia (saída antes da entrada)
     do
@@ -651,6 +1125,7 @@ void realizarReserva()
 
     //  Total; // Calcula automático - quantidade de dias * preço
     //  Pagamento; // 0 - Pendente, 1 - Pago - Geralmente é pendente | pago apenas no Realizar pagamento
+    item.pagamento = 0;
 
 
     //  NumReserva; // Gera automático - Verifica se não existe antes
@@ -671,6 +1146,9 @@ void realizarReserva()
     // }while(vetor != NULL && i < tam);
 
     // salvarReserva()
+    exibirReserva(item);
+    printf("\nReserva feita com sucesso!!\n");
+    return 1;
 }
 
 // void consultarReservas();

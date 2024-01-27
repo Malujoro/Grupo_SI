@@ -202,6 +202,7 @@ void refazerArquivoCliente(Cliente *vetor, int tam)
 }
 
 ///////////////////////////  LEITURA  //////////////////////////////////////////
+/* ==============Sugestão - Usar o stringDinâmica para pegar os itens dos Leia ================= */
 
 // Função para ler o nome do cliente
 // Recebe a variável que vai receber o nome
@@ -237,7 +238,7 @@ void leiaNome(char *nome)
 // Recebe a variável que vai receber o CPF
 void leiaCPF(char *cpf)
 {
-    char aux[TAM2];
+    char aux[TAM1];
     int tam, invalido = 1;
 
     do
@@ -299,7 +300,7 @@ void leiaCPF(char *cpf)
 // Recebe a variável que vai receber o RG
 void leiaRG(char *rg)
 {
-    char aux[TAM3];
+    char aux[TAM1];
     int tam, invalido = 1;
 
     do
@@ -358,7 +359,7 @@ void leiaRG(char *rg)
 // Recebe a variável que vai receber o telefone
 void leiaTelefone(char *telefone)
 {
-    char aux[TAM2];
+    char aux[TAM1];
     int tam, invalido = 1;
 
     do
@@ -519,6 +520,7 @@ int buscaCPF(Cliente *pessoa, int *pos)
     char cpf[TAM2];
 
     leiaCPF(cpf);
+    strcpy(pessoa->cpf, cpf);
     printf("\nBuscando por CPF: [%s]...\n", cpf);
 
     for(int i = 0; i < tam; i++)
@@ -768,14 +770,18 @@ void cadastrarEmail(char *email)
 }
 
 ///////////////////////////  ESTRUTURA  //////////////////////////////////////////
+
 // Função para CADASTRAR cliente
-void cadastrarCliente(Cliente *pessoa)
+void cadastrarCliente(Cliente *pessoa, int cpf)
 {
     Cliente aux;
 
     printf("\nCADASTRO DE CLIENTE\n");
     leiaNome(aux.nome);
-    cadastrarCPF(aux.cpf);
+    if(cpf == 0)
+        cadastrarCPF(aux.cpf);
+    else
+        strcpy(aux.cpf, pessoa->cpf);
     cadastrarRG(aux.rg);
     cadastrarTelefone(aux.telefone);
     leiaEndereco(aux.endereco);
@@ -786,7 +792,6 @@ void cadastrarCliente(Cliente *pessoa)
         printf("\nCliente cadastrado com sucesso!\n");
         *pessoa = aux;
     }
-
 }
 
 // Função para CONSULTAR cliente
@@ -908,14 +913,19 @@ void editarCliente()
             }
         }while(op < 0 || op > 6);
 
-        // Lê todos os dados do arquivo
-        int tam;
-        Cliente *vetor = lerArquivoCliente(&tam);
-        vetor[pos] = pessoa;
+        if(op > 0)
+        {
+            printf("\nDados alterados com sucesso\n");
+            exibirCliente(pessoa);
+            // Lê todos os dados do arquivo
+            int tam;
+            Cliente *vetor = lerArquivoCliente(&tam);
+            vetor[pos] = pessoa;
 
-        // Salva a informação editada, reescrevendo o arquivo
-        refazerArquivoCliente(vetor, tam);
-        free(vetor);
+            // Salva a informação editada, reescrevendo o arquivo
+            refazerArquivoCliente(vetor, tam);
+            free(vetor);
+        }
     }
 }
 
@@ -978,7 +988,7 @@ int main()
         switch(op)
         {
             case 1:
-                cadastrarCliente(&pessoa);
+                cadastrarCliente(&pessoa, 0);
                 break;
             
             case 2:
