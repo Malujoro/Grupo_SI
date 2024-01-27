@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define ARQQUARTO "quartos.bin"
+
 typedef struct
 {
     int numero;
@@ -17,6 +19,7 @@ int main()
 
     do
     {
+        printf("\n-----Quartos-----");
         printf("\n[1] - Cadastrar");
         printf("\n[2] - Exibir todos");
         printf("\nOpção: ");
@@ -47,13 +50,13 @@ int main()
                 printf("\nValor: R$");
                 scanf(" %f", &aux.valor);
                 
-                FILE *arquivo = fopen("quartos.bin", "ab");
+                FILE *arquivo = fopen(ARQQUARTO, "ab");
                 fwrite(&aux, sizeof(Quarto), 1, arquivo);
                 fclose(arquivo);
             break;
 
             case 2:
-                arquivo = fopen("quartos.bin", "rb");
+                arquivo = fopen(ARQQUARTO, "rb");
                 int tam;
 
                 Quarto *vetor = (Quarto *) malloc(sizeof(Quarto));

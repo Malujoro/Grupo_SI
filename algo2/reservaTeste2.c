@@ -3,14 +3,34 @@
 #include <string.h>
 #include <time.h>
 
+#define ARQQUARTO "quartos.bin"
 #define ARQCLIENTE "clientes.bin"
 #define ARQRESERVA "reservas.bin"
+
+#define SIMPLES 0
+#define DUPLO 1
+#define SUITE 2
+
+#define LIVRE 0
+#define OCUPADO 1
+#define RESERVADO 2
+
+#define PENDENTE 0
+#define PAGO 1
 
 #define TAM1 100 // Tamanho do Nome, Email e Endereço
 #define TAM2 15 // Tamanho do CPF e Telefone
 #define TAM3 13 // Tamanho do RG
 #define TAM4 11 // Tamanho das datas 00/00/0000
 #define TAM5 6 // Tamanho das horas 00:00
+
+typedef struct
+{
+    int numero;
+    int tipo; // 0 - Simples, 1 - Duplos, 2 - Suíte
+    int status; // 0 - Livre, 1 - Ocupado, 2 - Reservados
+    float valor;
+} Quarto;
 
 typedef struct
 {
@@ -423,6 +443,32 @@ void exibirReserva(Reserva item)
         printf("\nStatus de pagamento: Pago\n");
 }
 
+void exibirQuarto(Quarto quarto, int status)
+{
+    printf("\n----------Quarto----------");
+    printf("\nQuarto %d", quarto.numero);
+
+    if(quarto.tipo == SIMPLES)
+        printf("\nTipo Simples");
+    else if(quarto.tipo == DUPLO)
+        printf("\nTipo Duplo");
+    else if(quarto.tipo == SUITE)
+        printf("\nTipo Suíte");
+
+    if(status)
+    {
+        if(quarto.status == LIVRE)
+            printf("\nStatus Livre");
+        else if(quarto.status == OCUPADO)
+            printf("\nStatus Ocupado");
+        else if(quarto.status == RESERVADO)
+            printf("\nStatus Reservado");
+    }
+
+    printf("\nValor %.2f\n", quarto.valor);
+}
+
+
 // Função para exibir o menu de opções da seção cliente
 // Retorna a opção escolhida
 int menuReserva()
@@ -504,6 +550,32 @@ Reserva *lerArquivoReserva(int *tam)
     return NULL;
 }
 
+
+Quarto *lerArquivoQuarto(int *tam)
+{
+    if(arquivoExiste(ARQQUARTO))
+    {
+        FILE *arquivo = abrirArquivo(ARQQUARTO, "rb");
+        Quarto aux;
+
+
+        Quarto *vetor = (Quarto *) malloc(sizeof(Quarto));
+        *tam = 0;
+        while(fread(&aux, sizeof(Quarto), 1, arquivo) == 1)
+        {
+            vetor[*tam] = aux;
+            (*tam)++;
+            // Aumenta o tamanho do vetor dinamicamente
+            vetor = realloc(vetor, ((*tam) + 1) * sizeof(Quarto));
+        }
+        fclose(arquivo);
+
+        return vetor;
+    }
+    *tam = -1;
+    return NULL;
+}
+
 // Função para salvar as informações do cliente em um arquivo
 // Recebe a variável da pessoa
 int salvarCliente(Cliente pessoa)
@@ -536,6 +608,23 @@ int salvarReserva(Reserva item)
     return 1;
 }
 
+// Função para salvar as informações do cliente em um arquivo
+// Recebe a variável da pessoa
+int salvarQuarto(Quarto item)
+{
+    FILE *arquivo = abrirArquivo(ARQQUARTO, "ab");
+
+    if(fwrite(&item, sizeof(Quarto), 1, arquivo) < 1)
+    {
+        printf("\nErro! Não foi possível salvar as informações\n");
+        return 0;
+    }
+    fclose(arquivo);
+
+    return 1;
+}
+
+
 // Função para salvar a informação editada, reescrevendo o arquivo
 // Recebe o endereço do vetor que guarda todas as informações e seu tamanho
 void refazerArquivoReserva(Reserva *vetor, int tam)
@@ -545,6 +634,15 @@ void refazerArquivoReserva(Reserva *vetor, int tam)
 
     for(int i = 0; i < tam; i++)
         salvarReserva(vetor[i]);
+}
+
+void refazerArquivoQuarto(Quarto *vetor, int tam)
+{
+    FILE *arquivo = abrirArquivo(ARQQUARTO, "wb");
+    fclose(arquivo);
+
+    for(int i = 0; i < tam; i++)
+        salvarQuarto(vetor[i]);
 }
 
 ///////////////////////////  LEITURA  //////////////////////////////////////////
@@ -935,11 +1033,27 @@ int buscaCPF(Cliente *pessoa, int *pos)
 // Função para buscar um quarto pelo seu número
 // Recebe o endereço para "coletar" os dados do quarto e posição no vetor  
 /* ============================================================================ */
-// void buscaNumQuarto(Quarto *quarto, int *pos)
-// {
-//     int numero;
-//     numero = leiaInt("Número do quarto: ");
-// }
+int buscaNumQuarto(Quarto *quarto, int *pos, int user)
+{
+    int tam, i, numero;
+    Quarto *vetor = lerArquivoQuarto(&tam);
+
+    if(user == 0)
+        numero = leiaInt("Número do quarto: ");
+    else
+        numero = user;
+
+    for(i = 0; i < tam; i++)
+    {
+        if(vetor[i].numero == numero)
+        {
+            *pos = i;
+            *quarto = vetor[i];
+            return 1;
+        }
+    }
+    return 0;
+}
 
 // Função para buscar uma reserva pelo número
 // Recebe o endereço para "coletar" os dados da reserva e posição no vetor  
@@ -1136,8 +1250,8 @@ int realizarReserva()
 {
     Reserva item;
     Cliente pessoa;
-    int quantDias;
-    int pos;
+    Quarto quarto;
+    int quantDias, pos, pos2, i, j;
 
     do
     {
@@ -1148,23 +1262,61 @@ int realizarReserva()
             printf("\nDatas inválidas! Digite uma data de entrada menor que a data de saída\n");
     }while(quantDias < 0);
     
-    // Não sei se irá permitir a troca da data, ou então apenas um looping para ele escolher um quarto válido
-    // Exibir quartos disponíveis nessa data
-    // fazer um exibir quartos livres nesse dia // [QUARTOS]
-    // Caso não exista nenhum quarto, finaliza a tentativa de reserva?
+    int tamQuarto, tamReserva;
+    Quarto *vetorQuarto = lerArquivoQuarto(&tamQuarto);
+    Reserva *vetorReserva = lerArquivoReserva(&tamReserva);
+    int livres[tamQuarto], quant;
 
-    // int invalido;
-    // [QUARTOS]
-    // do
-    // {
+    // Exibir quartos livres no período descrito
+    do
+    {
+        quant = 0;
+        printf("\nQuartos livres nesse período: ");
+        for(i = 0; i < tamQuarto; i++)
+        {
+            if(vetorQuarto[i].status == LIVRE)
+            {
+                exibirQuarto(vetorQuarto[i], 0);
+                livres[quant] = vetorQuarto[i].numero;
+                quant++;
+            }
+            else if(vetorQuarto[i].status == RESERVADO)
+            {
+                for(j = 0; j < tamReserva; j++)
+                {
+                    // O quarto está livre caso a data inserida comece e termine ANTES da entrada que está salva nas outras reservas
+                    // OU, o quarto está livre caso a data inserida comece e termine DEPOIS da saída que está salva nas outras reservas
+                    if((gregorianaJuliana(item.dataEntrada) < gregorianaJuliana(vetorReserva[j].dataEntrada) && gregorianaJuliana(item.dataSaida) < gregorianaJuliana(vetorReserva[j].dataEntrada)) || (gregorianaJuliana(item.dataEntrada) > gregorianaJuliana(vetorReserva[j].dataSaida) && gregorianaJuliana(item.dataSaida) > gregorianaJuliana(vetorReserva[j].dataSaida)))
+                    {
+                        exibirQuarto(vetorQuarto[i], 0);
+                        livres[quant] = vetorQuarto[i].numero;
+                        quant++;
+                    }
+                }
+            }
+        }
+        if(quant == 0)
+        {
+            printf("\nNão há quartos livres nesse período\n");
+            printf("\nCancelando reserva...\n");
+            return 0;
+        }
         item.numQuarto = leiaInt("\nDigite o número do quarto: ");
-
-    // }while(invalido);
-    // Verificar se o cliente realmente escolheu o quarto certo // se o quarto digitado está disponível nessa data [QUARTOS]
+        for(i = 0; i < quant; i++)
+        {
+            if(item.numQuarto == livres[i])
+                break;
+        }
+        if(i == quant)
+            printf("\nNão é possível escolher esse quarto!!\n");
+    }while(i == quant);
     
+    free(vetorReserva);
+    free(vetorQuarto);
+
     // CPF é digitado e o programa busca por clientes cadastrados
     // Caso não esteja, cadastra o cliente
-    if(buscaCPF(&pessoa, &pos) == 0)
+    if(buscaCPF(&pessoa, &pos2) == 0)
     {
         char ch;
         do
@@ -1185,39 +1337,47 @@ int realizarReserva()
     }
     else
         printf("\nCliente [%s] já possui um cadastro\n", pessoa.nome);
+
+    // Salva o nome e cpf do cliente
     strcpy(item.nome, pessoa.nome);
     strcpy(item.cpf, pessoa.cpf);
 
+    // Como não foi realizado Check-in nem Check-out, os horários não podem ser definidos agora
     strcpy(item.horaEntrada, "0");
     strcpy(item.horaSaida, "0");
 
-    // if(quantDias == 0)
-    //     quantDias++;
-    // item.total = item.quantDias * quarto.preco // Total - Calcula automático
-    //  Pagamento; // 0 - Pendente, 1 - Pago - Geralmente é pendente | pago apenas no Realizar pagamento
-    item.pagamento = 0;
+    // Coloca o quarto como reservado
+    buscaNumQuarto(&quarto, &pos, item.numQuarto);
+    quarto.status = RESERVADO;
+    if(quantDias == 0)
+        quantDias++;
+    item.total = quantDias * quarto.valor; // Total - Calcula automático
+    item.pagamento = PENDENTE;
 
     srand(time(NULL));
     
-    // int tam, i = 0;
-    // Reserva *vetor = lerArquivoReserva(&tam);
-    
-    // do// Gera automático - Verifica se não existe antes
-    // {
+    vetorReserva = lerArquivoReserva(&tamReserva);
+    do // Gera automático - Verifica se não existe antes
+    {
         item.numReserva = (rand() % 99999999) + 1; // Gera de 1 a 99999999
-        // if(vetor != NULL && tam > 0)
-        // {
-        //     for(i = 0; i < tam; i++)
-        //     {
-        //         if(vetor[i]. == item.numReserva)
-        //             break;
-        //     }
-        // }
-    // }while(vetor != NULL && i < tam);
+        if(vetorReserva != NULL && tamReserva > 0)
+        {
+            for(i = 0; i < tamReserva; i++)
+            {
+                if(vetorReserva[i].numReserva == item.numReserva)
+                    break;
+            }
+        }
+    }while(vetorReserva != NULL && i < tamReserva);
+    free(vetorReserva);
 
-    // salvarReserva()
-    exibirReserva(item);
-    printf("\nReserva feita com sucesso!!\n");
+    if(salvarReserva(item))
+        printf("\nReserva feita com sucesso!!\n");
+
+    vetorQuarto = lerArquivoQuarto(&tamQuarto);
+    vetorQuarto[pos] = quarto;
+    refazerArquivoQuarto(vetorQuarto, tamQuarto);
+    free(vetorQuarto);
     return 1;
 }
 
@@ -1256,7 +1416,54 @@ int consultarReservas(Reserva *item, int *pos)
     return op;
 }
 
-// void excluirReserva();
+void excluirReserva()
+{
+    int posReserva, posQuarto, tamReserva, tamQuarto, i;
+    char ch;
+    Reserva item;
+    Reserva *vetorReserva = lerArquivoReserva(&tamReserva);
+    Quarto quarto;
+    Quarto *vetorQuarto = lerArquivoQuarto(&tamQuarto);
+
+    consultarReservas(&item, &posReserva);
+    buscaNumQuarto(&quarto, &posQuarto, item.numQuarto);
+    if(quarto.status == RESERVADO)
+    {
+        do
+        {
+            printf("Tem certeza que deseja excluir? Os dados dessa reserva serão perdidos para sempre\n");
+            ch = getchar();
+            limpaBuffer();
+            if(ch == 'S' || ch == 's')
+            {
+                tamReserva--;
+                for(i = posReserva; i < tamReserva; i++)
+                    vetorReserva[i] = vetorReserva[i+1];
+                refazerArquivoReserva(vetorReserva, tamReserva);
+
+                vetorReserva = lerArquivoReserva(&tamReserva);
+                for(i = 0; i < tamReserva; i++)
+                {
+                    if(item.numQuarto == vetorReserva[i].numQuarto && strcmp(item.dataEntrada, vetorReserva[i].dataEntrada) != 0 && strcmp(item.dataSaida, vetorReserva[i].dataSaida) != 0)
+                        break;
+                }
+                if(i == tamReserva)
+                {
+                    quarto.status = LIVRE;
+                    vetorQuarto[posQuarto] = quarto;
+                    refazerArquivoQuarto(vetorQuarto, tamQuarto);
+                }
+            }
+            else if (ch == 'N' || ch == 'n')
+                printf("\nCancelando...\n");
+            else
+                printf("\nOpção inválida!!\n");
+        }while(ch != 'N' && ch != 'n' && ch != 's' && ch != 'S');
+    }
+    free(vetorReserva);
+    free(vetorQuarto);
+}
+
 
 // Mudar o Quarto para ocupado \/
 // void realizarCheckin()
@@ -1265,7 +1472,7 @@ int consultarReservas(Reserva *item, int *pos)
     // consultarReserva();
     // leiaHora("\nHora de entrada: ", item.horaEntrada);
     // =======================================================
-    // buscarQuarto(quarto, item.numQuarto)
+    // buscaQuarto(quarto, item.numQuarto)
     // quarto.status = 1 // Status do quarto
     // =======================================================
     // refazerArquivoQuarto(vetor, tam)
@@ -1287,7 +1494,7 @@ int consultarReservas(Reserva *item, int *pos)
 //     }while(strcmp((item.dataEntrada, item.dataSaida) == 0) &&  quantMinutos < 0);
 //     // }while(quantDias == 0 &&  quantMinutos < 0);
     // =======================================================
-    // buscarQuarto(quarto, item.numQuarto)
+    // buscaQuarto(quarto, item.numQuarto)
     // quarto.status = 1 // Status do quarto
     // =======================================================
     // refazerArquivoQuarto(vetor, tam)
@@ -1332,7 +1539,7 @@ int main()
                 break;
 
             case 2:
-                // excluirReserva();
+                excluirReserva();
                 break;
                 
             case 3:
@@ -1355,6 +1562,12 @@ int main()
                 exibirTodasReservas();
                 break;
                 
+            case 8:
+                int tam, i;
+                Quarto *vetor = lerArquivoQuarto(&tam);
+                for(i = 0; i < tam; i++)
+                    exibirQuarto(vetor[i], 1);
+                break;
             case 0:
                 printf("\nVoltando...\n");
                 break;
