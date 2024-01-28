@@ -1095,7 +1095,10 @@ int buscaNumQuarto(Quarto *quarto, int *pos, int user)
     Quarto *vetor = lerArquivoQuarto(&tam);
 
     if(user == 0)
+    {
         numero = leiaInt("Número do quarto: ");
+        printf("\nBuscando pelo [Quarto %d]...\n", numero);
+    }
     else
         numero = user;
 
@@ -1108,6 +1111,7 @@ int buscaNumQuarto(Quarto *quarto, int *pos, int user)
             return 1;
         }
     }
+    free(vetor);
     return 0;
 }
 
@@ -1689,6 +1693,7 @@ void excluirCliente()
                         vetor[i] = vetor[i+1];
                     
                     refazerArquivoCliente(vetor, tam);
+                    printf("\nCliente excluído com sucesso\n");
                 }
                 else if (ch == 'N' || ch == 'n')
                     printf("\nCancelando...\n");
@@ -1969,8 +1974,11 @@ void excluirReserva()
                     {
                         tamReserva--;
                         for(i = posReserva; i < tamReserva; i++)
+                        {
                             vetorReserva[i] = vetorReserva[i+1];
                         refazerArquivoReserva(vetorReserva, tamReserva);
+                            printf("\nReserva excluída com sucesso\n");
+                        }
 
                         vetorReserva = lerArquivoReserva(&tamReserva);
                         for(i = 0; i < tamReserva; i++)
