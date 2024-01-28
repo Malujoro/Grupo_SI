@@ -4,6 +4,16 @@
 
 #define ARQQUARTOS "quartos.bin"
 
+// Tipos dos quartos
+#define SIMPLES 0
+#define DUPLO 1
+#define SUITE 2
+
+// Status dos quartos
+#define LIVRE 0
+#define OCUPADO 1
+#define RESERVADO 2
+
 typedef struct
 {
     int numero;
@@ -256,6 +266,54 @@ int menuBusca()
     return op;
 }
 
+//=======================================================================
+
+//////////////////////////////  EXIBIR  ////////////////////////////////////////////////////
+
+// Função para exibir um quarto
+// Recebe a variavel do Quarto e o "status"
+// Se status for verdadeiro (!= 0), exibe o status do quarto
+void exibirQuarto(Quarto quarto, int status)
+{
+    printf("\n----------Quarto----------");
+    printf("\nNúmero: %d", quarto.numero);
+
+    if(quarto.tipo == SIMPLES)
+        printf("\nTipo: Simples");
+    else if(quarto.tipo == DUPLO)
+        printf("\nTipo: Duplo");
+    else if(quarto.tipo == SUITE)
+        printf("\nTipo: Suíte");
+
+    if(status)
+    {
+        if(quarto.status == LIVRE)
+            printf("\nStatus: Livre");
+        else if(quarto.status == OCUPADO)
+            printf("\nStatus: Ocupado");
+        else if(quarto.status == RESERVADO)
+            printf("\nStatus: Reservado");
+    }
+
+    printf("\nPreço: R$%.2f\n", quarto.preco);
+}
+
+//Função para exibir todas as informações dos quartos
+void exibirTodosQuarto()
+{
+    FILE *arquivoQuartos = abrirArquivo(ARQQUARTOS, "rb");
+
+    Quarto quarto;
+
+    printf("\n----- INFORMAÇÕES DOS QUARTOS -----\n");
+
+    while (fread(&quarto, sizeof(Quarto), 1, arquivoQuartos) == 1) 
+        exibirQuarto(quarto, 1);
+
+    fclose(arquivoQuartos);
+}
+
+
 
 //////////////////////////////  CADASTRO  ///////////////////////////////////////////////////
 
@@ -332,9 +390,9 @@ int buscaNumero(int numero)
             printf("\nQuarto encontrado:\n");   //// TALVEZ DÊ PRA ADICIONAR INFORMAÇÕES DO CLIENTE ////
             printf("\nExibir todas as informações sobre o quarto? (S/N): ");
 
-            if(scanf("%c", &C) == 'S' || 's')
+            if(scanf(" %c", &C) == 'S' || 's')
             {
-                printf("\nNúmero: %d\nTipo: %d\nStatus: %d\nPreço: %.2f\n", quarto.numero, quarto.tipo, quarto.status, quarto.preco);
+                exibirQuarto(quarto, 1);
                 fclose(arquivoQuartos);
                 return 1;
             }
@@ -362,7 +420,7 @@ int buscaTipo(int tipo)
             printf("\nExibir todas as informações sobre o quarto? (S/N): ");
 
             if(scanf("%c", &C) == 'S' || 's'){
-                printf("\nNúmero: %d\nTipo: %d\nStatus: %d\nPreço: %.2f\n", quarto.numero, quarto.tipo, quarto.status, quarto.preco);
+                exibirQuarto(quarto, 1);
                 fclose(arquivoQuartos);
                 return 1;
             }
@@ -391,7 +449,7 @@ int buscaStatus(int status)
 
             if(scanf("%c", &C) == 'S' || 's')
             {
-                printf("\nNúmero: %d\nTipo: %d\nStatus: %d\nPreço: %.2f\n", quarto.numero, quarto.tipo, quarto.status, quarto.preco);
+                exibirQuarto(quarto, 1);
                 fclose(arquivoQuartos);
                 return 1;
             }
@@ -454,27 +512,6 @@ int buscaQuarto()
 
 //=======================================================================
 
-//////////////////////////////  EXIBIR  ////////////////////////////////////////////////////
-
-//Função para exibir todas as informações dos quartos
-void exibirQuarto()
-{
-    FILE *arquivoQuartos = abrirArquivo(ARQQUARTOS, "rb");
-
-    Quarto quarto;
-
-    printf("\n----- INFORMAÇÕES DOS QUARTOS -----\n");
-
-    while (fread(&quarto, sizeof(Quarto), 1, arquivoQuartos) == 1) 
-    {
-        printf("\nNúmero: %d;\nTipo: %d\nStatus: %d\nPreço: %.2f\n", quarto.numero, quarto.tipo, quarto.status, quarto.preco);
-        printf("------------------------------\n");
-    }
-
-    fclose(arquivoQuartos);
-}
-//=======================================================================
-
 //////////////////////////////  MAIN  //////////////////////////////////////////////////////
 int main()
 {
@@ -502,7 +539,7 @@ int main()
                 break;
 
             case 5:
-                exibirQuarto();
+                exibirTodosQuarto();
                 break;
             
             case 0:

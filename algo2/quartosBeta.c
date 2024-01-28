@@ -19,7 +19,7 @@ typedef struct
     int numero;
     int tipo; // 0 - Simples, 1 - Duplos, 2 - Suíte
     int status; // 0 - Livre, 1 - Ocupado, 2 - Reservados
-    float valor;
+    float preco;
 } Quarto;
 
 
@@ -241,26 +241,26 @@ void refazerArquivoQuarto(Quarto *vetor, int tam)
 void exibirQuarto(Quarto quarto, int status)
 {
     printf("\n----------Quarto----------");
-    printf("\nQuarto %d", quarto.numero);
+    printf("\nNúmero: %d", quarto.numero);
 
     if(quarto.tipo == SIMPLES)
-        printf("\nTipo Simples");
+        printf("\nTipo: Simples");
     else if(quarto.tipo == DUPLO)
-        printf("\nTipo Duplo");
+        printf("\nTipo: Duplo");
     else if(quarto.tipo == SUITE)
-        printf("\nTipo Suíte");
+        printf("\nTipo: Suíte");
 
     if(status)
     {
         if(quarto.status == LIVRE)
-            printf("\nStatus Livre");
+            printf("\nStatus: Livre");
         else if(quarto.status == OCUPADO)
-            printf("\nStatus Ocupado");
+            printf("\nStatus: Ocupado");
         else if(quarto.status == RESERVADO)
-            printf("\nStatus Reservado");
+            printf("\nStatus: Reservado");
     }
 
-    printf("\nValor %.2f\n", quarto.valor);
+    printf("\nPreço: R$%.2f\n", quarto.preco);
 }
 
 // Função para exibir o menu de opções da seção quarto
@@ -396,7 +396,7 @@ void cadastrarQuarto()
     cadastrarNumQuarto(&quarto.numero);
     cadastrarStatus(&quarto.status, 0);
     cadastrarTipo(&quarto.tipo);
-    quarto.valor = leiaFloat("\nValor do quarto: R$");
+    quarto.preco = leiaFloat("\nValor do quarto: R$");
 
     if(salvarQuarto(quarto))
         printf("\nQuarto cadastrado com sucesso!\n");
@@ -510,16 +510,16 @@ int buscaStatus(Quarto *quarto, int *pos)
 int buscaValor(Quarto *quarto, int *pos)
 {
     int tam, i;
-    float valor;
+    float preco;
     char ch;
     Quarto *vetor = lerArquivoQuarto(&tam);
 
-    valor = leiaFloat("\nValor: R$");
+    preco = leiaFloat("\nValor: R$");
 
     printf("\nBuscando por Quarto...\n");
     for(i = 0; i < tam; i++)
     {
-        if(vetor[i].valor == valor)
+        if(vetor[i].preco == preco)
         {
             do
             {
@@ -610,8 +610,8 @@ void editarQuarto()
                         quarto.tipo = quarto2.tipo;
                         break;
                     case 2:
-                        quarto2.valor = leiaFloat("\nValor do quarto: R$");
-                        quarto.valor = quarto2.valor;
+                        quarto2.preco = leiaFloat("\nValor do quarto: R$");
+                        quarto.preco = quarto2.preco;
                         break;
 
                     case 0:

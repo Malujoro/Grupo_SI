@@ -29,7 +29,7 @@ typedef struct
     int numero;
     int tipo; // 0 - Simples, 1 - Duplos, 2 - Suíte
     int status; // 0 - Livre, 1 - Ocupado, 2 - Reservados
-    float valor;
+    float preco;
 } Quarto;
 
 typedef struct
@@ -463,7 +463,7 @@ void exibirQuarto(Quarto quarto, int status)
             printf("\nStatus Reservado");
     }
 
-    printf("\nValor %.2f\n", quarto.valor);
+    printf("\nValor %.2f\n", quarto.preco);
 }
 
 // Função para exibir o menu de opções da seção cliente
@@ -1347,7 +1347,7 @@ int realizarReserva()
     quarto.status = RESERVADO;
     if(quantDias == 0)
         quantDias++;
-    item.total = quantDias * quarto.valor; // Total - Calcula automático
+    item.total = quantDias * quarto.preco; // Total - Calcula automático
     item.pagamento = PENDENTE;
 
     srand(time(NULL));
