@@ -471,17 +471,18 @@ void leiaEmail(char *email)
 // Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
 int buscaNomeCliente(Cliente *pessoa, int *pos)
 {
-    int tam;
+    int tam, tam2;
     Cliente *vetor = lerArquivoCliente(&tam);
 
     char nome[TAM1];
     char ch;
 
     leiaNome(nome);
+    tam2 = strlen(nome);
     printf("\nBuscando por Nome: [%s]...\n", nome);
     for(int i = 0; i < tam; i++)
     {
-        if(strcmp(nome, vetor[i].nome) == 0)
+        if(strncmp(nome, vetor[i].nome, tam2) == 0)
         {
             do
             {
@@ -592,17 +593,18 @@ int buscaTelefone(Cliente *pessoa, int *pos)
 // Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
 int buscaEndereco(Cliente *pessoa, int *pos)
 {
-    int tam;
+    int tam, tam2;
     Cliente *vetor = lerArquivoCliente(&tam);
 
     char endereco[TAM1];
     char ch;
 
     leiaEndereco(endereco);
+    tam2 = strlen(endereco);
     printf("\nBuscando por Endereco: [%s]...\n", endereco);
     for(int i = 0; i < tam; i++)
     {
-        if(strcmp(endereco, vetor[i].endereco) == 0)
+        if(strncmp(endereco, vetor[i].endereco, tam2) == 0)
         {
             do
             {
