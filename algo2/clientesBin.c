@@ -916,6 +916,7 @@ int consultarCliente(Cliente *pessoa, int *pos)
         }while(op < 0 || op > 6);
         return op;
     }
+    free(vetor);
     printf("\nNinguém foi cadastrado ainda!!\n");
     return 0;
 }
@@ -993,7 +994,7 @@ void editarCliente()
                 int tamReserva;
                 Reserva *vetorReserva = lerArquivoReserva(&tamReserva);
 
-                for(int i = 0; i < tam; i++)
+                for(int i = 0; i < tamReserva; i++)
                 {
                     if(strcmp(pessoa3.cpf, vetorReserva[i].cpf) == 0)
                     {
@@ -1015,31 +1016,43 @@ void editarCliente()
 // Função para EXCLUIR cliente
 void excluirCliente()
 {
-    int pos, tam;
+    int pos, tam, tamReserva, i;
     char ch;
     Cliente pessoa;
     Cliente *vetor = lerArquivoCliente(&tam);
+    Reserva *vetorReserva = lerArquivoReserva(&tamReserva);
 
     if(consultarCliente(&pessoa, &pos))
     {
-        do
+        for(i = 0; i < tamReserva; i++)
         {
-            printf("Tem certeza que deseja excluir? Os dados desse cliente serão perdidos para sempre\n");
-            ch = getchar();
-            limpaBuffer();
-            if(ch == 'S' || ch == 's')
+            if(strcmp(vetorReserva[i].cpf, pessoa.cpf) == 0)
+                break;
+        }
+        if(i == tamReserva)
+        {
+
+            do
             {
-                tam--;
-                for(int i = pos; i < tam; i++)
-                    vetor[i] = vetor[i+1];
-                
-                refazerArquivoCliente(vetor, tam);
-            }
-            else if (ch == 'N' || ch == 'n')
-                printf("\nCancelando...\n");
-            else
-                printf("\nOpção inválida!!\n");
-        }while(ch != 'N' && ch != 'n' && ch != 's' && ch != 'S');
+                printf("Tem certeza que deseja excluir? Os dados desse cliente serão perdidos para sempre\n");
+                ch = getchar();
+                limpaBuffer();
+                if(ch == 'S' || ch == 's')
+                {
+                    tam--;
+                    for(int i = pos; i < tam; i++)
+                        vetor[i] = vetor[i+1];
+                    
+                    refazerArquivoCliente(vetor, tam);
+                }
+                else if (ch == 'N' || ch == 'n')
+                    printf("\nCancelando...\n");
+                else
+                    printf("\nOpção inválida!!\n");
+            }while(ch != 'N' && ch != 'n' && ch != 's' && ch != 'S');
+        }
+        else
+            printf("\nNão é possível excluir um cliente que efetuou uma reserva\n");
     }
     free(vetor);
 }
@@ -1060,7 +1073,7 @@ void exibirTodosClientes()
     free(vetor);
 }
 
-int main()
+int secaoCliente()
 {
     int op, pos;
     Cliente pessoa;

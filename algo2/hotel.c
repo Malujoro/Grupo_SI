@@ -3,27 +3,33 @@
 #include <string.h>
 #include <time.h>
 
+// Nomes dos arquivos
 #define ARQQUARTO "quartos.bin"
 #define ARQCLIENTE "clientes.bin"
 #define ARQRESERVA "reservas.bin"
 
+// Tipos dos quartos
 #define SIMPLES 0
 #define DUPLO 1
 #define SUITE 2
 
+// Status dos quartos
 #define LIVRE 0
 #define OCUPADO 1
 #define RESERVADO 2
 
+// Pagamento da Reserva
 #define PENDENTE 0
 #define PAGO 1
 
+// Tamanhos "universais"
 #define TAM1 100 // Tamanho do Nome, Email e Endereço
 #define TAM2 15 // Tamanho do CPF e Telefone
 #define TAM3 13 // Tamanho do RG
 #define TAM4 11 // Tamanho das datas 00/00/0000
 #define TAM5 6 // Tamanho das horas 00:00
 
+// Structs utilizadas
 typedef struct
 {
     int numero;
@@ -56,7 +62,7 @@ typedef struct
     int pagamento; // 0 - Pendente, 1 - Pago 
 } Reserva;
 
-///////////////////////////  OUTROS  //////////////////////////////////////////
+///////////////////////////  OUTROS  ///////////////////////////
 
 // Função para limpar o Buffer (caracteres excedentes)
 void limpaBuffer()
@@ -383,7 +389,7 @@ void maiusc(char *string, char *string2, int tam)
     }
 }
 
-///////////////////////////  ARQUIVO  //////////////////////////////////////////
+///////////////////////////  ARQUIVO  ///////////////////////////
 
 // Função para abrir arquivos
 // Recebe o nome e modo do arquivo. Retorna o endereço do arquivo
@@ -413,85 +419,29 @@ int arquivoExiste(char *nome)
     return 1;
 }
 
-///////////////////////////  RESERVAS  //////////////////////////////////////////
-
-// Função para exibir uma reserva
-// Recebe a variavel da Reserva
-void exibirReserva(Reserva item)
+Quarto *lerArquivoQuarto(int *tam)
 {
-    printf("\n----------Reserva----------");
-    printf("\nNúmero de reserva: %08d", item.numReserva);
-    printf("\nNúmero do quarto: %d", item.numQuarto);
-    printf("\nNome do cliente: %s", item.nome);
-    printf("\nCPF: %s", item.cpf);
-    printf("\nData de entrada: %s", item.dataEntrada);
-    printf("\nData de saída: %s", item.dataSaida);
-
-    if(strcmp(item.horaEntrada, "0"))
-        printf("\nHora de entrada: %s", item.horaEntrada);
-
-    if(strcmp(item.horaSaida, "0"))
-        printf("\nHora de saída: %s", item.horaSaida);
-
-    printf("\nTotal: R$%.2f", item.total);
-
-    if(item.pagamento == 0)
-        printf("\nStatus de pagamento: Pendente\n");
-    else
-        printf("\nStatus de pagamento: Pago\n");
-}
-
-void exibirQuarto(Quarto quarto, int status)
-{
-    printf("\n----------Quarto----------");
-    printf("\nQuarto %d", quarto.numero);
-
-    if(quarto.tipo == SIMPLES)
-        printf("\nTipo Simples");
-    else if(quarto.tipo == DUPLO)
-        printf("\nTipo Duplo");
-    else if(quarto.tipo == SUITE)
-        printf("\nTipo Suíte");
-
-    if(status)
+    if(arquivoExiste(ARQQUARTO))
     {
-        if(quarto.status == LIVRE)
-            printf("\nStatus Livre");
-        else if(quarto.status == OCUPADO)
-            printf("\nStatus Ocupado");
-        else if(quarto.status == RESERVADO)
-            printf("\nStatus Reservado");
+        FILE *arquivo = abrirArquivo(ARQQUARTO, "rb");
+        Quarto aux;
+
+
+        Quarto *vetor = (Quarto *) malloc(sizeof(Quarto));
+        *tam = 0;
+        while(fread(&aux, sizeof(Quarto), 1, arquivo) == 1)
+        {
+            vetor[*tam] = aux;
+            (*tam)++;
+            // Aumenta o tamanho do vetor dinamicamente
+            vetor = realloc(vetor, ((*tam) + 1) * sizeof(Quarto));
+        }
+        fclose(arquivo);
+
+        return vetor;
     }
-
-    printf("\nValor %.2f\n", quarto.valor);
-}
-
-// Função para exibir o menu de opções da seção cliente
-// Retorna a opção escolhida
-int menuReserva()
-{
-    int op;
-    printf("\n-----SEÇÃO DA RESERVA-----");
-    printf("\n[1] - Realizar reserva");
-    printf("\n[2] - Excluir reserva");
-    printf("\n[3] - Realizar Check-in");
-    printf("\n[4] - Realizar pagamento");
-    printf("\n[5] - Consultar reservas");
-    printf("\n[6] - Valores recebidos");
-    printf("\n[7] - Exibir todas as reservas");
-    printf("\n[0] - Voltar");
-    op = leiaInt("\nOpção: ");
-    return op;
-}
-
-int menuBuscaReserva()
-{
-    int op;
-    printf("\n[1] - Nome");
-    printf("\n[2] - Número da reserva");
-    printf("\n[0] - Voltar");
-    op = leiaInt("\nOpção: ");
-    return op;
+    *tam = -1;
+    return NULL;
 }
 
 // Função para ler um arquivo e salvar as informações em um vetor
@@ -547,30 +497,20 @@ Reserva *lerArquivoReserva(int *tam)
     return NULL;
 }
 
-
-Quarto *lerArquivoQuarto(int *tam)
+// Função para salvar as informações do cliente em um arquivo
+// Recebe a variável da pessoa
+int salvarQuarto(Quarto item)
 {
-    if(arquivoExiste(ARQQUARTO))
+    FILE *arquivo = abrirArquivo(ARQQUARTO, "ab");
+
+    if(fwrite(&item, sizeof(Quarto), 1, arquivo) < 1)
     {
-        FILE *arquivo = abrirArquivo(ARQQUARTO, "rb");
-        Quarto aux;
-
-
-        Quarto *vetor = (Quarto *) malloc(sizeof(Quarto));
-        *tam = 0;
-        while(fread(&aux, sizeof(Quarto), 1, arquivo) == 1)
-        {
-            vetor[*tam] = aux;
-            (*tam)++;
-            // Aumenta o tamanho do vetor dinamicamente
-            vetor = realloc(vetor, ((*tam) + 1) * sizeof(Quarto));
-        }
-        fclose(arquivo);
-
-        return vetor;
+        printf("\nErro! Não foi possível salvar as informações\n");
+        return 0;
     }
-    *tam = -1;
-    return NULL;
+    fclose(arquivo);
+
+    return 1;
 }
 
 // Função para salvar as informações do cliente em um arquivo
@@ -589,8 +529,6 @@ int salvarCliente(Cliente pessoa)
     return 1;
 }
 
-// Função para salvar as informações do cliente em um arquivo
-// Recebe a variável da pessoa
 int salvarReserva(Reserva item)
 {
     FILE *arquivo = abrirArquivo(ARQRESERVA, "ab");
@@ -605,20 +543,15 @@ int salvarReserva(Reserva item)
     return 1;
 }
 
-// Função para salvar as informações do cliente em um arquivo
-// Recebe a variável da pessoa
-int salvarQuarto(Quarto item)
+// Função para salvar a informação editada, reescrevendo o arquivo
+// Recebe o endereço do vetor que guarda todas as informações e seu tamanho
+void refazerArquivoCliente(Cliente *vetor, int tam)
 {
-    FILE *arquivo = abrirArquivo(ARQQUARTO, "ab");
-
-    if(fwrite(&item, sizeof(Quarto), 1, arquivo) < 1)
-    {
-        printf("\nErro! Não foi possível salvar as informações\n");
-        return 0;
-    }
+    FILE *arquivo = abrirArquivo(ARQCLIENTE, "wb");
     fclose(arquivo);
 
-    return 1;
+    for(int i = 0; i < tam; i++)
+        salvarCliente(vetor[i]);
 }
 
 // Função para salvar a informação editada, reescrevendo o arquivo
@@ -641,7 +574,146 @@ void refazerArquivoQuarto(Quarto *vetor, int tam)
         salvarQuarto(vetor[i]);
 }
 
-///////////////////////////  LEITURA  //////////////////////////////////////////
+///////////////////////////  MENUS  ///////////////////////////
+
+void exibirQuarto(Quarto quarto, int status)
+{
+    printf("\n----------Quarto----------");
+    printf("\nQuarto %d", quarto.numero);
+
+    if(quarto.tipo == SIMPLES)
+        printf("\nTipo Simples");
+    else if(quarto.tipo == DUPLO)
+        printf("\nTipo Duplo");
+    else if(quarto.tipo == SUITE)
+        printf("\nTipo Suíte");
+
+    if(status)
+    {
+        if(quarto.status == LIVRE)
+            printf("\nStatus Livre");
+        else if(quarto.status == OCUPADO)
+            printf("\nStatus Ocupado");
+        else if(quarto.status == RESERVADO)
+            printf("\nStatus Reservado");
+    }
+
+    printf("\nValor %.2f\n", quarto.valor);
+}
+
+// Função para exibir um cliente
+// Recebe a variavel do Cliente
+void exibirCliente(Cliente pessoa)
+{
+    printf("\n----------Cliente----------");
+    printf("\nNome: %s", pessoa.nome);
+    printf("\nCPF: %s", pessoa.cpf);
+    printf("\nRG: %s", pessoa.rg);
+    printf("\nTelefone: %s", pessoa.telefone);
+    printf("\nEndereço: %s", pessoa.endereco);
+    printf("\nEmail: %s\n", pessoa.email);
+}
+
+// Função para exibir uma reserva
+// Recebe a variavel da Reserva
+void exibirReserva(Reserva item)
+{
+    printf("\n----------Reserva----------");
+    printf("\nNúmero de reserva: %08d", item.numReserva);
+    printf("\nNúmero do quarto: %d", item.numQuarto);
+    printf("\nNome do cliente: %s", item.nome);
+    printf("\nCPF: %s", item.cpf);
+    printf("\nData de entrada: %s", item.dataEntrada);
+    printf("\nData de saída: %s", item.dataSaida);
+
+    if(strcmp(item.horaEntrada, "0"))
+        printf("\nHora de entrada: %s", item.horaEntrada);
+
+    if(strcmp(item.horaSaida, "0"))
+        printf("\nHora de saída: %s", item.horaSaida);
+
+    printf("\nTotal: R$%.2f", item.total);
+
+    if(item.pagamento == 0)
+        printf("\nStatus de pagamento: Pendente\n");
+    else
+        printf("\nStatus de pagamento: Pago\n");
+}
+
+int menu()
+{
+    int op;
+    printf("\n----------HOTEL----------");
+    printf("\n[1] - Seção dos quartos");
+    printf("\n[2] - Seção dos clientes");
+    printf("\n[3] - Seção das reservas");
+    printf("\n[0] - Finalizar programa");
+    op = leiaInt("\nOpção: ");
+    return op;
+}
+
+// Função para exibir o menu de opções da seção cliente
+// Retorna a opção escolhida
+int menuCliente()
+{
+    int op;
+    printf("\n-----SEÇÃO DO CLIENTE-----");
+    printf("\n[1] - Cadastrar cliente");
+    printf("\n[2] - Consultar cliente");
+    printf("\n[3] - Editar cliente");
+    printf("\n[4] - Excluir cliente");
+    printf("\n[5] - Exibir todos");
+    printf("\n[0] - Voltar");
+    op = leiaInt("\nOpção: ");
+    return op;
+}
+
+// Função para exibir o menu de opções para buscar/editar
+// Retorna a opção escolhida
+int menuEditCliente()
+{
+    int op;
+    printf("\n[1] - Nome");
+    printf("\n[2] - CPF");
+    printf("\n[3] - RG");
+    printf("\n[4] - Telefone");
+    printf("\n[5] - Endereço");
+    printf("\n[6] - Email");
+    printf("\n[0] - Voltar");
+    op = leiaInt("\nOpção: ");
+
+    return op;
+}
+
+// Função para exibir o menu de opções da seção cliente
+// Retorna a opção escolhida
+int menuReserva()
+{
+    int op;
+    printf("\n-----SEÇÃO DA RESERVA-----");
+    printf("\n[1] - Realizar reserva");
+    printf("\n[2] - Excluir reserva");
+    printf("\n[3] - Realizar Check-in");
+    printf("\n[4] - Realizar pagamento");
+    printf("\n[5] - Consultar reservas");
+    printf("\n[6] - Valores recebidos");
+    printf("\n[7] - Exibir todas as reservas");
+    printf("\n[0] - Voltar");
+    op = leiaInt("\nOpção: ");
+    return op;
+}
+
+int menuBuscaReserva()
+{
+    int op;
+    printf("\n[1] - Nome");
+    printf("\n[2] - Número da reserva");
+    printf("\n[0] - Voltar");
+    op = leiaInt("\nOpção: ");
+    return op;
+}
+
+///////////////////////////  LEITURA  ///////////////////////////
 
 // Função para ler o nome do cliente
 // Recebe a variável que vai receber o nome
@@ -998,8 +1070,75 @@ void leiaHora(char *texto, char *hora)
     }while(invalido);
 }
 
-///////////////////////////  BUSCA  //////////////////////////////////////////
+///////////////////////////  BUSCA  ///////////////////////////
 
+// Função para buscar um quarto pelo seu número
+// Recebe o endereço para "coletar" os dados do quarto e posição no vetor  
+int buscaNumQuarto(Quarto *quarto, int *pos, int user)
+{
+    int tam, i, numero;
+    Quarto *vetor = lerArquivoQuarto(&tam);
+
+    if(user == 0)
+        numero = leiaInt("Número do quarto: ");
+    else
+        numero = user;
+
+    for(i = 0; i < tam; i++)
+    {
+        if(vetor[i].numero == numero)
+        {
+            *pos = i;
+            *quarto = vetor[i];
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// Função para buscar um cliente pelo Nome
+// Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
+int buscaNomeCliente(Cliente *pessoa, int *pos)
+{
+    int tam, tam2;
+    Cliente *vetor = lerArquivoCliente(&tam);
+
+    char nome[TAM1];
+    char ch;
+
+    leiaNome(nome);
+    tam2 = strlen(nome);
+    printf("\nBuscando por Nome: [%s]...\n", nome);
+    for(int i = 0; i < tam; i++)
+    {
+        if(strncmp(nome, vetor[i].nome, tam2) == 0)
+        {
+            do
+            {
+                exibirCliente(vetor[i]);
+                printf("\nEsse cliente? ");
+                ch = getchar();
+                limpaBuffer();
+                if(ch == 'S' || ch == 's')
+                {
+                    *pos = i;
+                    *pessoa = vetor[i];
+                    return 1;
+                }
+                else if (ch == 'N' || ch == 'n')
+                    printf("\nBuscando por Nome: [%s]...\n", nome);
+                else
+                    printf("\nOpção inválida!!\n");
+            }while(ch != 'N' && ch != 'n');
+        }
+    }
+    printf("Não foi encontrado ninguém com esse nome!!\n");
+    free(vetor);
+    return 0;
+}
+
+// Função para buscar um cliente com pelo CPF
+// Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
 int buscaCPF(Cliente *pessoa, int *pos)
 {
     int tam;
@@ -1025,27 +1164,125 @@ int buscaCPF(Cliente *pessoa, int *pos)
     return 0;
 }
 
-// Função para buscar um quarto pelo seu número
-// Recebe o endereço para "coletar" os dados do quarto e posição no vetor  
-int buscaNumQuarto(Quarto *quarto, int *pos, int user)
+// Função para buscar um cliente com pelo RG
+// Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
+int buscaRG(Cliente *pessoa, int *pos)
 {
-    int tam, i, numero;
-    Quarto *vetor = lerArquivoQuarto(&tam);
+    int tam;
+    Cliente *vetor = lerArquivoCliente(&tam);
 
-    if(user == 0)
-        numero = leiaInt("Número do quarto: ");
-    else
-        numero = user;
+    char rg[TAM3];
 
-    for(i = 0; i < tam; i++)
+    leiaRG(rg);
+    printf("\nBuscando por CPF: [%s]...\n", rg);
+
+    for(int i = 0; i < tam; i++)
     {
-        if(vetor[i].numero == numero)
+        if(strcmp(rg, vetor[i].rg) == 0)
         {
             *pos = i;
-            *quarto = vetor[i];
+            *pessoa = vetor[i];
             return 1;
         }
     }
+
+    printf("Não foi encontrado ninguém com esse RG!!\n");
+    free(vetor);
+    return 0;
+}
+
+// Função para buscar um cliente com pelo Telefone
+// Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
+int buscaTelefone(Cliente *pessoa, int *pos)
+{
+    int tam;
+    Cliente *vetor = lerArquivoCliente(&tam);
+
+    char telefone[TAM2];
+
+    leiaTelefone(telefone);
+    printf("\nBuscando por Telefone: [%s]...\n", telefone);
+
+    for(int i = 0; i < tam; i++)
+    {
+        if(strcmp(telefone, vetor[i].telefone) == 0)
+        {
+            *pos = i;
+            *pessoa = vetor[i];
+            return 1;
+        }
+    }
+
+    printf("Não foi encontrado ninguém com esse Telefone!!\n");
+    free(vetor);
+    return 0;
+}
+
+// Função para buscar um cliente pelo Endereço
+// Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
+int buscaEndereco(Cliente *pessoa, int *pos)
+{
+    int tam, tam2;
+    Cliente *vetor = lerArquivoCliente(&tam);
+
+    char endereco[TAM1];
+    char ch;
+
+    leiaEndereco(endereco);
+    tam2 = strlen(endereco);
+    printf("\nBuscando por Endereco: [%s]...\n", endereco);
+    for(int i = 0; i < tam; i++)
+    {
+        if(strncmp(endereco, vetor[i].endereco, tam2) == 0)
+        {
+            do
+            {
+                exibirCliente(vetor[i]);
+                printf("\nEsse cliente? ");
+                ch = getchar();
+                limpaBuffer();
+                if(ch == 'S' || ch == 's')
+                {
+                    *pos = i;
+                    *pessoa = vetor[i];
+                    return 1;
+                }
+                else if (ch == 'N' || ch == 'n')
+                    printf("\nBuscando por Endereco: [%s]...\n", endereco);
+                else
+                    printf("\nOpção inválida!!\n");
+            }while(ch != 'N' && ch != 'n');
+        }
+    }
+    printf("Não foi encontrado ninguém com esse endereço!!\n");
+    free(vetor);
+    return 0;
+}
+
+// Função para buscar um cliente com pelo Email
+// Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
+int buscaEmail(Cliente *pessoa, int *pos)
+{
+    int tam;
+    Cliente *vetor = lerArquivoCliente(&tam);
+
+    char email[TAM1];
+
+    leiaEmail(email);
+    printf("\nBuscando por Email: [%s]...\n", email);
+
+    for(int i = 0; i < tam; i++)
+    {
+        if(strcmp(email, vetor[i].email) == 0)
+        {
+            *pos = i;
+            *pessoa = vetor[i];
+            return 1;
+        }
+    }
+
+    printf("Não foi encontrado ninguém com esse Email!!\n");
+    free(vetor);
     return 0;
 }
 
@@ -1113,7 +1350,7 @@ int buscaNomeReserva(Reserva *item, int *pos)
     return 0;
 }
 
-///////////////////////////  CADASTRO  //////////////////////////////////////////
+///////////////////////////  CADASTRO  ///////////////////////////
 
 // Função para cadastrar o CPF
 // Recebe a variável que vai receber o CPF
@@ -1215,6 +1452,12 @@ void cadastrarEmail(char *email)
     free(vetor);
 }
 
+////////////////////////  SEÇÃO QUARTO  ////////////////////////
+
+
+
+////////////////////////  SEÇÃO CLIENTE  ////////////////////////
+
 // Função para CADASTRAR cliente
 void cadastrarCliente(Cliente *pessoa, int cpf)
 {
@@ -1238,7 +1481,268 @@ void cadastrarCliente(Cliente *pessoa, int cpf)
     }
 }
 
-///////////////////////////  ESTRUTURA  //////////////////////////////////////////
+// Função para CONSULTAR cliente
+// Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
+int consultarCliente(Cliente *pessoa, int *pos)
+{
+    int op, tam;
+    Cliente *vetor = lerArquivoCliente(&tam);
+    if(vetor != NULL && tam > 0)
+    {
+        do
+        {
+            printf("\n-----Buscar cliente por:-----");
+            op = menuEditCliente();
+
+            switch(op)
+            {
+                case 1:
+                    if(buscaNomeCliente(pessoa, pos) == 0)
+                        op = 0;
+                    break;
+
+                case 2:
+                    if(buscaCPF(pessoa, pos))
+                        exibirCliente(*pessoa);
+                    else
+                        op = 0;
+                    break;
+
+                case 3:
+                    if(buscaRG(pessoa, pos))
+                        exibirCliente(*pessoa);
+                    else
+                        op = 0;
+                    break;
+
+                case 4:
+                    if(buscaTelefone(pessoa, pos))
+                        exibirCliente(*pessoa);
+                    else
+                        op = 0;
+                    break;
+
+                case 5:
+                    if(buscaEndereco(pessoa, pos) == 0)
+                        op = 0;
+                    break;
+
+                case 6:
+                    if(buscaEmail(pessoa, pos))
+                        exibirCliente(*pessoa);
+                    else
+                        op = 0;
+                    break;
+
+                case 0:
+                    printf("\nVoltando...\n");
+                    break;
+
+                default:
+                    printf("\nOpção inválida!\n");
+            }
+        }while(op < 0 || op > 6);
+        return op;
+    }
+    free(vetor);
+    printf("\nNinguém foi cadastrado ainda!!\n");
+    return 0;
+}
+
+// Função para EDITAR cliente
+void editarCliente()
+{
+    int op, pos, mudou = 0;
+    Cliente pessoa, pessoa2, pessoa3;
+
+    if(consultarCliente(&pessoa, &pos))
+    {
+        pessoa3 = pessoa;
+        do
+        {
+            printf("\n-----Editar-----");
+            op = menuEditCliente();
+            switch(op)
+            {
+                case 1:
+                    leiaNome(pessoa2.nome);
+                    strcpy(pessoa.nome, pessoa2.nome);
+                    mudou = 1;
+                    break;
+
+                case 2:
+                    cadastrarCPF(pessoa2.cpf);
+                    strcpy(pessoa.cpf, pessoa2.cpf);
+                    mudou = 2;
+                    break;
+
+                case 3:
+                    cadastrarRG(pessoa2.rg);
+                    strcpy(pessoa.rg, pessoa2.rg);
+                    break;
+
+                case 4:
+                    cadastrarTelefone(pessoa2.telefone);
+                    strcpy(pessoa.telefone, pessoa2.telefone);
+                    break;
+
+                case 5:
+                    leiaEndereco(pessoa2.endereco);
+                    strcpy(pessoa.endereco, pessoa2.endereco);
+                    break;
+
+                case 6:
+                    cadastrarEmail(pessoa2.email);
+                    strcpy(pessoa.email, pessoa2.email);
+                    break;
+                case 0:
+                    printf("\nVoltando...\n");
+                    break;
+
+                default:
+                    printf("\nOpção inválida!\n");
+            }
+        }while(op < 0 || op > 6);
+
+        if(op > 0)
+        {
+            printf("\nDados alterados com sucesso\n");
+            exibirCliente(pessoa);
+            // Lê todos os dados do arquivo
+            int tam;
+            Cliente *vetor = lerArquivoCliente(&tam);
+            vetor[pos] = pessoa;
+
+            // Salva a informação editada, reescrevendo o arquivo
+            refazerArquivoCliente(vetor, tam);
+            free(vetor);
+
+            if(mudou)
+            {
+                int tamReserva;
+                Reserva *vetorReserva = lerArquivoReserva(&tamReserva);
+
+                for(int i = 0; i < tamReserva; i++)
+                {
+                    if(strcmp(pessoa3.cpf, vetorReserva[i].cpf) == 0)
+                    {
+                        if(mudou == 1)
+                            strcpy(vetorReserva[i].nome, pessoa.nome);
+                        else
+                            strcpy(vetorReserva[i].cpf, pessoa.cpf);
+
+                    }
+                }
+                
+                refazerArquivoReserva(vetorReserva, tamReserva);
+                free(vetorReserva);
+            }
+        }
+    }
+}
+
+// Função para EXCLUIR cliente
+void excluirCliente()
+{
+    int pos, tam, tamReserva, i;
+    char ch;
+    Cliente pessoa;
+    Cliente *vetor = lerArquivoCliente(&tam);
+    Reserva *vetorReserva = lerArquivoReserva(&tamReserva);
+
+    if(consultarCliente(&pessoa, &pos))
+    {
+        for(i = 0; i < tamReserva; i++)
+        {
+            if(strcmp(vetorReserva[i].cpf, pessoa.cpf) == 0)
+                break;
+        }
+        if(i == tamReserva)
+        {
+
+            do
+            {
+                printf("Tem certeza que deseja excluir? Os dados desse cliente serão perdidos para sempre\n");
+                ch = getchar();
+                limpaBuffer();
+                if(ch == 'S' || ch == 's')
+                {
+                    tam--;
+                    for(int i = pos; i < tam; i++)
+                        vetor[i] = vetor[i+1];
+                    
+                    refazerArquivoCliente(vetor, tam);
+                }
+                else if (ch == 'N' || ch == 'n')
+                    printf("\nCancelando...\n");
+                else
+                    printf("\nOpção inválida!!\n");
+            }while(ch != 'N' && ch != 'n' && ch != 's' && ch != 'S');
+        }
+        else
+            printf("\nNão é possível excluir um cliente que efetuou uma reserva\n");
+    }
+    free(vetor);
+}
+
+// Função para exibir TODOS os clientes
+void exibirTodosClientes()
+{
+    int tam;
+    Cliente *vetor = lerArquivoCliente(&tam);
+
+    if(vetor != NULL && tam > 0)
+    {
+        for(int i = 0; i < tam; i++)
+            exibirCliente(vetor[i]);
+    }
+    else
+        printf("\nNinguém foi cadastrado ainda!!\n");
+    free(vetor);
+}
+
+int secaoCliente()
+{
+    int op, pos;
+    Cliente pessoa;
+
+    do
+    {
+        op = menuCliente();
+        switch(op)
+        {
+            case 1:
+                cadastrarCliente(&pessoa, 0);
+                break;
+            
+            case 2:
+                consultarCliente(&pessoa, &pos);
+                break;
+
+            case 3:
+                editarCliente();
+                break;
+            
+            case 4:
+                excluirCliente();
+                break;
+
+            case 5:
+                exibirTodosClientes();
+                break;
+
+            case 0:
+                printf("\nVoltando...\n");
+                break;
+
+            default:
+                printf("\nOpção inválida!\n");
+        }
+    }while(op != 0);
+    return 0;
+}
+
+////////////////////////  SEÇÃO RESERVA  ////////////////////////
 
 int realizarReserva()
 {
@@ -1626,7 +2130,6 @@ void exibirTodasReservas()
     free(vetor);
 }
 
-
 int secaoReserva()
 {
     Reserva item;
@@ -1665,16 +2168,44 @@ int secaoReserva()
                 exibirTodasReservas();
                 break;
                 
-            case 8:
-                int tam, i;
-                Quarto *vetor = lerArquivoQuarto(&tam);
-                for(i = 0; i < tam; i++)
-                    exibirQuarto(vetor[i], 1);
-                break;
             case 0:
                 printf("\nVoltando...\n");
                 break;
                             
+            default:
+                printf("\nOpção inválida!\n");
+        }
+    }while(op != 0);
+
+    return 0;
+}
+
+////////////////////////  INT MAIN  ////////////////////////
+int main()
+{
+    int op;
+    do
+    {
+        op = menu();
+        
+        switch(op)
+        {
+            case 1:
+                // secaoQuarto();
+                break;
+
+            case 2:
+                secaoCliente();
+                break;
+
+            case 3:
+                secaoReserva();
+                break;
+
+            case 0:
+                printf("\nFinalizando programa...\n");
+                break;
+
             default:
                 printf("\nOpção inválida!\n");
         }
