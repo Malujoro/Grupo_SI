@@ -623,7 +623,6 @@ int salvarQuarto(Quarto item)
     return 1;
 }
 
-
 // Função para salvar a informação editada, reescrevendo o arquivo
 // Recebe o endereço do vetor que guarda todas as informações e seu tamanho
 void refazerArquivoReserva(Reserva *vetor, int tam)

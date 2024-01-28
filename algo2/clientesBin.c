@@ -3,9 +3,13 @@
 #include <string.h>
 
 #define ARQCLIENTE "clientes.bin"
+#define ARQRESERVA "reservas.bin"
+
 #define TAM1 100 // Tamanho do Nome, Email e Endereço
 #define TAM2 15 // Tamanho do CPF e Telefone
 #define TAM3 13 // Tamanho do RG
+#define TAM4 11 // Tamanho das datas 00/00/0000
+#define TAM5 6 // Tamanho das horas 00:00
 
 typedef struct
 {
@@ -16,6 +20,20 @@ typedef struct
     char endereco[TAM1];
     char email[TAM1];
 } Cliente;
+
+typedef struct
+{
+    int numReserva;
+    int numQuarto;
+    char nome[TAM1];
+    char cpf[TAM2];
+    char dataEntrada[TAM4];
+    char dataSaida[TAM4];
+    char horaEntrada[TAM5];
+    char horaSaida[TAM5];
+    float total;
+    int pagamento; // 0 - Pendente, 1 - Pago 
+} Reserva;
 
 ///////////////////////////  OUTROS  //////////////////////////////////////////
 
@@ -174,6 +192,32 @@ Cliente *lerArquivoCliente(int *tam)
     return NULL;
 }
 
+// Função para ler um arquivo e salvar as informações em um vetor
+// Recebe uma variável para guardar o tamanho. Retorna o endereço do vetor
+Reserva *lerArquivoReserva(int *tam)
+{
+    if(arquivoExiste(ARQRESERVA))
+    {
+        FILE *arquivo = abrirArquivo(ARQRESERVA, "rb");
+        Reserva aux;
+
+        Reserva *vetor = (Reserva *) malloc(sizeof(Reserva));
+        *tam = 0;
+        while(fread(&aux, sizeof(Reserva), 1, arquivo) == 1)
+        {
+            vetor[*tam] = aux;
+            (*tam)++;
+            // Aumenta o tamanho do vetor dinamicamente
+            vetor = realloc(vetor, ((*tam) + 1) * sizeof(Reserva));
+        }
+        fclose(arquivo);
+
+        return vetor;
+    }
+    *tam = -1;
+    return NULL;
+}
+
 // Função para salvar as informações do cliente em um arquivo
 // Recebe a variável da pessoa
 int salvarCliente(Cliente pessoa)
@@ -181,6 +225,20 @@ int salvarCliente(Cliente pessoa)
     FILE *arquivo = abrirArquivo(ARQCLIENTE, "ab");
 
     if(fwrite(&pessoa, sizeof(Cliente), 1, arquivo) < 1)
+    {
+        printf("\nErro! Não foi possível salvar as informações\n");
+        return 0;
+    }
+    fclose(arquivo);
+
+    return 1;
+}
+
+int salvarReserva(Reserva item)
+{
+    FILE *arquivo = abrirArquivo(ARQRESERVA, "ab");
+
+    if(fwrite(&item, sizeof(Reserva), 1, arquivo) < 1)
     {
         printf("\nErro! Não foi possível salvar as informações\n");
         return 0;
@@ -199,6 +257,17 @@ void refazerArquivoCliente(Cliente *vetor, int tam)
 
     for(int i = 0; i < tam; i++)
         salvarCliente(vetor[i]);
+}
+
+// Função para salvar a informação editada, reescrevendo o arquivo
+// Recebe o endereço do vetor que guarda todas as informações e seu tamanho
+void refazerArquivoReserva(Reserva *vetor, int tam)
+{
+    FILE *arquivo = abrirArquivo(ARQRESERVA, "wb");
+    fclose(arquivo);
+
+    for(int i = 0; i < tam; i++)
+        salvarReserva(vetor[i]);
 }
 
 ///////////////////////////  LEITURA  //////////////////////////////////////////
@@ -854,11 +923,12 @@ int consultarCliente(Cliente *pessoa, int *pos)
 // Função para EDITAR cliente
 void editarCliente()
 {
-    int op, pos;
-    Cliente pessoa, pessoa2;
+    int op, pos, mudou = 0;
+    Cliente pessoa, pessoa2, pessoa3;
 
     if(consultarCliente(&pessoa, &pos))
     {
+        pessoa3 = pessoa;
         do
         {
             printf("\n-----Editar-----");
@@ -868,11 +938,13 @@ void editarCliente()
                 case 1:
                     leiaNome(pessoa2.nome);
                     strcpy(pessoa.nome, pessoa2.nome);
+                    mudou = 1;
                     break;
 
                 case 2:
                     cadastrarCPF(pessoa2.cpf);
                     strcpy(pessoa.cpf, pessoa2.cpf);
+                    mudou = 2;
                     break;
 
                 case 3:
@@ -915,6 +987,27 @@ void editarCliente()
             // Salva a informação editada, reescrevendo o arquivo
             refazerArquivoCliente(vetor, tam);
             free(vetor);
+
+            if(mudou)
+            {
+                int tamReserva;
+                Reserva *vetorReserva = lerArquivoReserva(&tamReserva);
+
+                for(int i = 0; i < tam; i++)
+                {
+                    if(strcmp(pessoa3.cpf, vetorReserva[i].cpf) == 0)
+                    {
+                        if(mudou == 1)
+                            strcpy(vetorReserva[i].nome, pessoa.nome);
+                        else
+                            strcpy(vetorReserva[i].cpf, pessoa.cpf);
+
+                    }
+                }
+                
+                refazerArquivoReserva(vetorReserva, tamReserva);
+                free(vetorReserva);
+            }
         }
     }
 }
