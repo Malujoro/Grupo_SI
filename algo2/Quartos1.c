@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ARQQUARTOS "quartos.bin"
+#define ARQQUARTO "quartos.bin"
 
 // Tipos dos quartos
 #define SIMPLES 0
@@ -193,6 +193,61 @@ int arquivoExiste(char *nome)
 }
 //==================================================================
 
+// Função para ler o arquivo do quarto e salvar as informações em um vetor
+// Recebe uma variável para guardar o tamanho. Retorna o endereço do vetor
+Quarto *lerArquivoQuarto(int *tam)
+{
+    if(arquivoExiste(ARQQUARTO))
+    {
+        FILE *arquivo = abrirArquivo(ARQQUARTO, "rb");
+        Quarto aux;
+
+
+        Quarto *vetor = (Quarto *) malloc(sizeof(Quarto));
+        *tam = 0;
+        while(fread(&aux, sizeof(Quarto), 1, arquivo) == 1)
+        {
+            vetor[*tam] = aux;
+            (*tam)++;
+            // Aumenta o tamanho do vetor dinamicamente
+            vetor = realloc(vetor, ((*tam) + 1) * sizeof(Quarto));
+        }
+        fclose(arquivo);
+
+        return vetor;
+    }
+    *tam = -1;
+    return NULL;
+}
+
+// Função para salvar as informações do quarto em um arquivo
+// Recebe a variável do quarto
+int salvarQuarto(Quarto item)
+{
+    FILE *arquivo = abrirArquivo(ARQQUARTO, "ab");
+
+    if(fwrite(&item, sizeof(Quarto), 1, arquivo) < 1)
+    {
+        printf("\nErro! Não foi possível salvar as informações\n");
+        return 0;
+    }
+    fclose(arquivo);
+
+    return 1;
+}
+
+// Função para salvar a informação editada, reescrevendo o arquivo
+// Recebe o endereço do vetor que guarda todas as informações e seu tamanho
+void refazerArquivoQuarto(Quarto *vetor, int tam)
+{
+    FILE *arquivo = abrirArquivo(ARQQUARTO, "wb");
+    fclose(arquivo);
+
+    for(int i = 0; i < tam; i++)
+        salvarQuarto(vetor[i]);
+}
+
+
 /////////////////////////////  QUARTOS  ///////////////////////////////////////////////
 
 // Função para exibir o menu de opções da seção quartos (menu principal)
@@ -228,6 +283,7 @@ int menuTipo()
             printf("\nERRO! Digite uma opção válida.\n");
         }
     } while (op < 1 || op > 3);
+    op--;
     return op;
 }
 
@@ -249,6 +305,7 @@ int menuStatus()
             printf("\nERRO! Digite uma opção válida.\n");
         }
     } while (op < 1 || op > 2);
+    op--;
     return op;
 } 
 //===================================================================
@@ -299,77 +356,73 @@ void exibirQuarto(Quarto quarto, int status)
 }
 
 //Função para exibir todas as informações dos quartos
-void exibirTodosQuarto()
+void exibirTodosQuartos()
 {
-    FILE *arquivoQuartos = abrirArquivo(ARQQUARTOS, "rb");
+    int tam, i;
+    Quarto *vetor = lerArquivoQuarto(&tam);
 
-    Quarto quarto;
+    if(vetor != NULL && tam > 0)
+    {
+        printf("\n----- INFORMAÇÕES DOS QUARTOS -----\n");
 
-    printf("\n----- INFORMAÇÕES DOS QUARTOS -----\n");
+        for(i = 0; i < tam; i++)
+        {
+            exibirQuarto(vetor[i], 1);
 
-    while (fread(&quarto, sizeof(Quarto), 1, arquivoQuartos) == 1) 
-        exibirQuarto(quarto, 1);
-
-    fclose(arquivoQuartos);
+        }
+    }
+    else
+        printf("\nNenhum quarto foi cadastrado ainda!!\n");
+    free(vetor);
 }
-
-
 
 //////////////////////////////  CADASTRO  ///////////////////////////////////////////////////
 
 //Função para verificar se não há outro quarto com o mesmo número
 int numQuartoExiste(int numero)
 {
-    FILE *arquivoQuartos = abrirArquivo(ARQQUARTOS, "rb");
+    int tam, i;
+    Quarto *vetor = lerArquivoQuarto(&tam);
 
-    Quarto quarto;
-
-    while (fread(&quarto, sizeof(Quarto), 1, arquivoQuartos) == 1) 
+    if(vetor != NULL && tam > 0)
     {
-        if (quarto.numero == numero) 
+        for(i = 0; i < tam; i++)
         {
-            fclose(arquivoQuartos);
-            return 1;
+            if (vetor[i].numero == numero) 
+            {
+                free(vetor);
+                return 1;
+            }
         }
     }
-
-    fclose(arquivoQuartos);
+    free(vetor);
     return 0;
 }
 
 void cadastroQuarto()
 {
-    FILE *arquivoQuartos;
-
-    if(!arquivoExiste(ARQQUARTOS))
-    {
-        arquivoQuartos = abrirArquivo(ARQQUARTOS, "wb");
-    }
-    else 
-    {
-        arquivoQuartos = abrirArquivo(ARQQUARTOS, "ab");
-    }
-
     Quarto novoQuarto;
 
     printf("\nCADASTRO DE QUARTOS:\n");
-
     do
     {
-        novoQuarto.numero = leiaInt("Digite o número do quarto: ");
+        novoQuarto.numero = leiaInt("\nDigite o número do quarto: ");
 
         if(numQuartoExiste(novoQuarto.numero)) 
         {
             printf("\nERRO! O número do quarto já existe. Tente novamente.\n");
         }
-    } while (numQuartoExiste(novoQuarto.numero));
+        else if(novoQuarto.numero < 0)
+        {
+            printf("\nERRO! O Número digitado é inválido. Tente novamente.\n");
+        }
+    } while (numQuartoExiste(novoQuarto.numero) || novoQuarto.numero < 0);
 
     novoQuarto.tipo = menuTipo();
     novoQuarto.status = menuStatus();
-    novoQuarto.preco = leiaFloat("\nDigite o preço do quarto: ");
+    novoQuarto.preco = leiaFloat("\nDigite o preço do quarto: R$");
 
-    fwrite(&novoQuarto, sizeof(Quarto), 1, arquivoQuartos);
-    fclose(arquivoQuartos);
+    salvarQuarto(novoQuarto);
 
     printf("\nQuarto cadastrado com sucesso!\n");
 }
@@ -378,28 +431,36 @@ void cadastroQuarto()
 
 int buscaNumero(int numero) 
 {
-    FILE *arquivoQuartos = abrirArquivo(ARQQUARTOS, "rb");
-
-    Quarto quarto;
+    int tam, i;
+    Quarto *vetor = lerArquivoQuarto(&tam);
     char C;
 
-    while(fread(&quarto, sizeof(Quarto), 1, arquivoQuartos) == 1) 
+    for(i = 0; i < tam; i++)
     {
-        if(quarto.numero == numero) 
+        if(vetor[i].numero == numero) 
         {
-            printf("\nQuarto encontrado:\n");   //// TALVEZ DÊ PRA ADICIONAR INFORMAÇÕES DO CLIENTE ////
-            printf("\nExibir todas as informações sobre o quarto? (S/N): ");
-
-            if(scanf(" %c", &C) == 'S' || 's')
+            do
             {
-                exibirQuarto(quarto, 1);
-                fclose(arquivoQuartos);
-                return 1;
-            }
+                printf("\nQuarto encontrado:\n");   //// TALVEZ DÊ PRA ADICIONAR INFORMAÇÕES DO CLIENTE ////
+                printf("\nExibir todas as informações sobre o quarto? (S/N): ");
+
+                if(scanf(" %c", &C) == 'S' || C == 's')
+                {
+                    exibirQuarto(vetor[i], 1);
+                    return 1;
+                }
+                else if(C == 'N' || C == 'n')
+                {
+                    return 0;
+                }
+                else
+                {
+                    printf("\nOpção inválida!!\n");
+                }
+            }while(C != 'N' && C != 'n' && C != 'S' && C != 's');
         }
     }
-
-    fclose(arquivoQuartos);
+    free(vetor);
     printf("\nQuarto não encontrado.\n");
     return 0;
 }
@@ -407,27 +468,36 @@ int buscaNumero(int numero)
 
 int buscaTipo(int tipo)
 {
-    FILE *arquivoQuartos = abrirArquivo(ARQQUARTOS, "rb");
-
-    Quarto quarto;
+    int tam, i;
+    Quarto *vetor = lerArquivoQuarto(&tam);
     char C;
 
-    while(fread(&quarto, sizeof(Quarto), 1, arquivoQuartos) == 1) 
+    for(i = 0; i < tam; i++)
     {
-        if(quarto.tipo == tipo) 
+        if(vetor[i].tipo == tipo) 
         {
-            printf("\nQuarto encontrado:\n");   //// TALVEZ DÊ PRA ADICIONAR INFORMAÇÕES DO CLIENTE ////
-            printf("\nExibir todas as informações sobre o quarto? (S/N): ");
+            do
+            {
+                printf("\nQuarto encontrado:\n");   //// TALVEZ DÊ PRA ADICIONAR INFORMAÇÕES DO CLIENTE ////
+                printf("\nExibir todas as informações sobre o quarto? (S/N): ");
 
-            if(scanf("%c", &C) == 'S' || 's'){
-                exibirQuarto(quarto, 1);
-                fclose(arquivoQuartos);
-                return 1;
-            }
+                if(scanf(" %c", &C) == 'S' || C == 's')
+                {
+                    exibirQuarto(vetor[i], 1);
+                    return 1;
+                }
+                else if(C == 'N' || C == 'n')
+                {
+                    return 0;
+                }
+                else
+                {
+                    printf("\nOpção inválida!!\n");
+                }
+            }while(C != 'N' && C != 'n' && C != 'S' && C != 's');
         }
     }
-
-    fclose(arquivoQuartos);
+    free(vetor);
     printf("\nQuarto não encontrado.\n");
     return 0;
 }
@@ -435,28 +505,36 @@ int buscaTipo(int tipo)
 
 int buscaStatus(int status)
 {
-    FILE *arquivoQuartos = abrirArquivo(ARQQUARTOS, "rb");
-
-    Quarto quarto;
+    int tam, i;
+    Quarto *vetor = lerArquivoQuarto(&tam);
     char C;
 
-    while(fread(&quarto, sizeof(Quarto), 1, arquivoQuartos) == 1) 
+    for(i = 0; i < tam; i++)
     {
-        if(quarto.status == status) 
+        if(vetor[i].status == status) 
         {
-            printf("\nQuarto encontrado:\n");   //// TALVEZ DÊ PRA ADICIONAR INFORMAÇÕES DO CLIENTE ////
-            printf("\nExibir todas as informações sobre o quarto? (S/N): ");
-
-            if(scanf("%c", &C) == 'S' || 's')
+            do
             {
-                exibirQuarto(quarto, 1);
-                fclose(arquivoQuartos);
-                return 1;
-            }
+                printf("\nQuarto encontrado:\n");   //// TALVEZ DÊ PRA ADICIONAR INFORMAÇÕES DO CLIENTE ////
+                printf("\nExibir todas as informações sobre o quarto? (S/N): ");
+
+                if(scanf(" %c", &C) == 'S' || C == 's')
+                {
+                    exibirQuarto(vetor[i], 1);
+                    return 1;
+                }
+                else if(C == 'N' || C == 'n')
+                {
+                    return 0;
+                }
+                else
+                {
+                    printf("\nOpção inválida!!\n");
+                }
+            }while(C != 'N' && C != 'n' && C != 'S' && C != 's');
         }
     }
-
-    fclose(arquivoQuartos);
+    free(vetor);
     printf("\nQuarto não encontrado.\n");
     return 0;
 }
@@ -464,42 +542,50 @@ int buscaStatus(int status)
 
 int buscaQuarto()
 {
-    int op;
+    int op, tam;
+    Quarto *vetor = lerArquivoQuarto(&tam);
 
-    do
+    if(vetor != NULL && tam > 0)
     {
-        op = menuBusca();
-        switch(op)
+        do
         {
-            case 1: 
+            op = menuBusca();
+            switch(op)
             {
-                int numeroConsulta = leiaInt("\nDigite o número do quarto para consultar: ");
-                buscaNumero(numeroConsulta);
+                case 1: 
+                {
+                    int numeroConsulta = leiaInt("\nDigite o número do quarto para consultar: ");
+                    buscaNumero(numeroConsulta);
+                }
+                    break;
+
+                case 2: 
+                {
+                    int tipoConsulta = menuTipo();
+                    buscaNumero(tipoConsulta);
+                }
+                    break;
+
+                case 3:
+                {
+                    int statusConsulta = menuStatus();
+                    buscaNumero(statusConsulta);
+                }
+                    break;
+
+                case 0:
+                {
+                    printf("\nVoltando...\n");
+                    break;
+                }
+
+                default:
+                    printf("\nOpção inválida!\n");
             }
-                break;
-
-            case 2: 
-            {
-                int tipoConsulta = menuTipo();
-                buscaNumero(tipoConsulta);
-            }
-                break;
-
-            case 3:
-            {
-                int statusConsulta = menuStatus();
-                buscaNumero(statusConsulta);
-            }
-                break;
-
-            case 0:
-                break;
-
-            default:
-                printf("\nOpção inválida!\n");
-        }
-    } while (op < 0 || op > 3);
-
+        } while (op < 0 || op > 3);
+    }
+    else
+        printf("\nNenhum quarto foi cadastrado ainda!!\n");
     return op;
 }
 //=======================================================================
@@ -539,12 +625,14 @@ int main()
                 break;
 
             case 5:
-                exibirTodosQuarto();
+                exibirTodosQuartos();
                 break;
             
             case 0:
-                
+            {
+                printf("\nVoltando...\n");
                 break;
+            }
 
             default:
                 printf("\nOpção inválida!\n");
