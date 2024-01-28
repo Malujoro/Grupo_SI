@@ -419,6 +419,8 @@ int arquivoExiste(char *nome)
     return 1;
 }
 
+// Função para ler o arquivo do quarto e salvar as informações em um vetor
+// Recebe uma variável para guardar o tamanho. Retorna o endereço do vetor
 Quarto *lerArquivoQuarto(int *tam)
 {
     if(arquivoExiste(ARQQUARTO))
@@ -444,7 +446,7 @@ Quarto *lerArquivoQuarto(int *tam)
     return NULL;
 }
 
-// Função para ler um arquivo e salvar as informações em um vetor
+// Função para ler o arquivo do cliente e salvar as informações em um vetor
 // Recebe uma variável para guardar o tamanho. Retorna o endereço do vetor
 Cliente *lerArquivoCliente(int *tam)
 {
@@ -471,7 +473,7 @@ Cliente *lerArquivoCliente(int *tam)
     return NULL;
 }
 
-// Função para ler um arquivo e salvar as informações em um vetor
+// Função para ler o arquivo da reserva e salvar as informações em um vetor
 // Recebe uma variável para guardar o tamanho. Retorna o endereço do vetor
 Reserva *lerArquivoReserva(int *tam)
 {
@@ -497,8 +499,8 @@ Reserva *lerArquivoReserva(int *tam)
     return NULL;
 }
 
-// Função para salvar as informações do cliente em um arquivo
-// Recebe a variável da pessoa
+// Função para salvar as informações do quarto em um arquivo
+// Recebe a variável do quarto
 int salvarQuarto(Quarto item)
 {
     FILE *arquivo = abrirArquivo(ARQQUARTO, "ab");
@@ -529,6 +531,8 @@ int salvarCliente(Cliente pessoa)
     return 1;
 }
 
+// Função para salvar as informações da reserva em um arquivo
+// Recebe a variável do item
 int salvarReserva(Reserva item)
 {
     FILE *arquivo = abrirArquivo(ARQRESERVA, "ab");
@@ -565,6 +569,8 @@ void refazerArquivoReserva(Reserva *vetor, int tam)
         salvarReserva(vetor[i]);
 }
 
+// Função para salvar a informação editada, reescrevendo o arquivo
+// Recebe o endereço do vetor que guarda todas as informações e seu tamanho
 void refazerArquivoQuarto(Quarto *vetor, int tam)
 {
     FILE *arquivo = abrirArquivo(ARQQUARTO, "wb");
@@ -576,6 +582,9 @@ void refazerArquivoQuarto(Quarto *vetor, int tam)
 
 ///////////////////////////  MENUS  ///////////////////////////
 
+// Função para exibir um quarto
+// Recebe a variavel do Quarto e o "status"
+// Se status for verdadeiro (!= 0), exibe o status do quarto
 void exibirQuarto(Quarto quarto, int status)
 {
     printf("\n----------Quarto----------");
@@ -640,6 +649,8 @@ void exibirReserva(Reserva item)
         printf("\nStatus de pagamento: Pago\n");
 }
 
+// Função para exibir o menu principal do hotel
+// Retorna a opção escolhida
 int menu()
 {
     int op;
@@ -668,7 +679,7 @@ int menuCliente()
     return op;
 }
 
-// Função para exibir o menu de opções para buscar/editar
+// Função para exibir o menu de opções para buscar/editar o cliente
 // Retorna a opção escolhida
 int menuEditCliente()
 {
@@ -685,7 +696,7 @@ int menuEditCliente()
     return op;
 }
 
-// Função para exibir o menu de opções da seção cliente
+// Função para exibir o menu de opções da seção reserva
 // Retorna a opção escolhida
 int menuReserva()
 {
@@ -703,6 +714,8 @@ int menuReserva()
     return op;
 }
 
+// Função para exibir o menu de opções para buscar a reserva
+// Retorna a opção escolhida
 int menuBuscaReserva()
 {
     int op;
@@ -1073,7 +1086,9 @@ void leiaHora(char *texto, char *hora)
 ///////////////////////////  BUSCA  ///////////////////////////
 
 // Função para buscar um quarto pelo seu número
-// Recebe o endereço para "coletar" os dados do quarto e posição no vetor  
+// Recebe o endereço para "coletar" os dados do quarto, sua posição no vetor e o "user"
+// Se o user for falso (0), irá pedir ao usuário para digitar o número do quarto buscado
+// Se o user for verdadeiro (!= 0), o número buscado será o do próprio user
 int buscaNumQuarto(Quarto *quarto, int *pos, int user)
 {
     int tam, i, numero;
@@ -1137,7 +1152,7 @@ int buscaNomeCliente(Cliente *pessoa, int *pos)
     return 0;
 }
 
-// Função para buscar um cliente com pelo CPF
+// Função para buscar um cliente pelo CPF
 // Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
 int buscaCPF(Cliente *pessoa, int *pos)
 {
@@ -1164,7 +1179,7 @@ int buscaCPF(Cliente *pessoa, int *pos)
     return 0;
 }
 
-// Função para buscar um cliente com pelo RG
+// Função para buscar um cliente pelo RG
 // Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
 int buscaRG(Cliente *pessoa, int *pos)
 {
@@ -1191,7 +1206,7 @@ int buscaRG(Cliente *pessoa, int *pos)
     return 0;
 }
 
-// Função para buscar um cliente com pelo Telefone
+// Função para buscar um cliente pelo Telefone
 // Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
 int buscaTelefone(Cliente *pessoa, int *pos)
 {
@@ -1259,7 +1274,7 @@ int buscaEndereco(Cliente *pessoa, int *pos)
     return 0;
 }
 
-// Função para buscar um cliente com pelo Email
+// Função para buscar um cliente pelo Email
 // Recebe o endereço para "coletar" os dados do cliente e posição no vetor  
 int buscaEmail(Cliente *pessoa, int *pos)
 {
@@ -1459,6 +1474,8 @@ void cadastrarEmail(char *email)
 ////////////////////////  SEÇÃO CLIENTE  ////////////////////////
 
 // Função para CADASTRAR cliente
+// Recebe o endereço para "coletar" os dados do cliente e o "cpf"
+// Se o cpf for verdadeiro (!= 0) o usuário não precisa cadastrar o cpf 
 void cadastrarCliente(Cliente *pessoa, int cpf)
 {
     Cliente aux;
@@ -1685,7 +1702,7 @@ void excluirCliente()
     free(vetor);
 }
 
-// Função para exibir TODOS os clientes
+// Função para EXIBIR TODOS os clientes
 void exibirTodosClientes()
 {
     int tam;
@@ -1701,6 +1718,7 @@ void exibirTodosClientes()
     free(vetor);
 }
 
+// Função principal dos clientes
 int secaoCliente()
 {
     int op, pos;
@@ -1744,6 +1762,7 @@ int secaoCliente()
 
 ////////////////////////  SEÇÃO RESERVA  ////////////////////////
 
+// Função para CADASTRAR/REALIZAR reserva
 int realizarReserva()
 {
     Reserva item;
@@ -1881,6 +1900,8 @@ int realizarReserva()
     return 1;
 }
 
+// Função para CONSULTAR reserva
+// Recebe o endereço para "coletar" os dados da reserva e posição no vetor  
 int consultarReservas(Reserva *item, int *pos)
 {
     int op, tam;
@@ -1921,6 +1942,7 @@ int consultarReservas(Reserva *item, int *pos)
     return 0;
 }
 
+// Função para EXCLUIR reserva
 void excluirReserva()
 {
     int posReserva, posQuarto, tamReserva, tamQuarto, i;
@@ -1979,6 +2001,7 @@ void excluirReserva()
     }
 }
 
+// Função para REALIZAR CHECK-IN
 void realizarCheckin()
 {
     int tamReserva, tamQuarto, posReserva, posQuarto;
@@ -2018,6 +2041,7 @@ void realizarCheckin()
     free(vetorReserva);
 }
 
+// Função para REALIZAR pagamento / CHECK-OUT
 void realizarPagamento()
 {
     int quantMinutos, tamReserva, tamQuarto, posReserva, posQuarto;
@@ -2078,6 +2102,7 @@ void realizarPagamento()
     free(vetorReserva);
 }
 
+// Função para EXIBIR os valores recebidos dentro de um período
 void valoresRecebidos()
 {
     char inicio[TAM1], fim[TAM1];
@@ -2130,6 +2155,7 @@ void exibirTodasReservas()
     free(vetor);
 }
 
+// Função principal das reservas
 int secaoReserva()
 {
     Reserva item;
