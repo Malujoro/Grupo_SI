@@ -562,14 +562,14 @@ int buscaQuarto()
                 case 2: 
                 {
                     int tipoConsulta = menuTipo();
-                    buscaNumero(tipoConsulta);
+                    buscaTipo(tipoConsulta);
                 }
                     break;
 
                 case 3:
                 {
                     int statusConsulta = menuStatus();
-                    buscaNumero(statusConsulta);
+                    buscaStatus(statusConsulta);
                 }
                     break;
 
