@@ -741,6 +741,83 @@ int menuBuscaReserva()
     return op;
 }
 
+// Função para exibir o menu de opções da seção quartos (menu principal)
+// Retorna a opção escolhida
+int menuQuartos()
+{
+    printf("\n-----SEÇÃO DOS QUARTOS-----");
+    printf("\n[1] - Cadastrar quarto");
+    printf("\n[2] - Consultar quarto");
+    printf("\n[3] - Editar quarto");
+    printf("\n[4] - Excluir quarto");
+    printf("\n[5] - Exibir todos");
+    printf("\n[0] - Voltar");
+    int op = leiaInt("\nOpção: ");
+    return op;
+}
+
+// Função para exibir o menu de opções de tipos de quartos
+// Retorna a opção escolhida
+int menuTipo()
+{
+    printf("\n-----TIPO DE QUARTO-----");
+    printf("\n[1] - Quarto simples");
+    printf("\n[2] - Quarto duplo");
+    printf("\n[3] - Quarto suíte");
+    int op;
+    do
+    {
+        op = leiaInt("\nOpção: ");
+        if(op < 1 || op > 3)
+        {
+            printf("\nERRO! Digite uma opção válida.\n");
+        }
+    } while (op < 1 || op > 3);
+    op--;
+    return op;
+}
+
+// Função para exibir o menu de opções do status do quarto
+// Retorna a opção escolhida
+int menuStatus(int reservado)
+{
+    int limite = 2;
+
+    printf("\n-----STATUS DO QUARTO-----");
+    printf("\n[1] - Livre");
+    printf("\n[2] - Ocupado");
+    if(reservado)
+    {
+        printf("\n[3] - Reservado");
+        limite = 3;
+    }
+
+    int op;
+    do
+    {
+        op = leiaInt("\nOpção: ");
+        if(op < 1 || op > limite)
+        {
+            printf("\nERRO! Digite uma opção válida.\n");
+        }
+    } while (op < 1 || op > limite);
+    op--;
+    return op;
+} 
+
+// Função para exibir o menu de opções de consulta
+// Retorna a opção escolhida
+int menuBusca()
+{
+    printf("\n-----CONSULTA POR-----");
+    printf("\n[1] - Número");
+    printf("\n[2] - Tipo");
+    printf("\n[3] - Status");
+    printf("\n[0] - Voltar");
+    int op = leiaInt("\nOpção: ");
+    return op;
+}
+
 ///////////////////////////  LEITURA  ///////////////////////////
 
 // Função para ler o nome do cliente
@@ -1100,7 +1177,116 @@ void leiaHora(char *texto, char *hora)
 
 ///////////////////////////  BUSCA  ///////////////////////////
 
-// Função para buscar um quarto pelo seu número
+// Função para buscar um quarto pelo seu número (usuário)
+// Recebe o "número do quarto buscado", o endereço para "coletar" os dados do quarto e sua posição no vetor
+int buscaNumero(int numero, int *pos, Quarto *quarto) 
+{
+    int tam, i;
+    Quarto *vetor = lerArquivoQuarto(&tam);
+
+    for(i = 0; i < tam; i++)
+    {
+        if(vetor[i].numero == numero) 
+        {
+            printf("\nQuarto encontrado: \n");
+
+            exibirQuarto(vetor[i], 1);
+            *pos = i;
+            *quarto = vetor[i];
+            return 1;
+        }
+    }
+    free(vetor);
+    printf("\nQuarto não encontrado.\n");
+    return 0;
+}
+
+// Função para buscar um quarto pelo seu tipo
+// Recebe o tipo a ser buscado, o endereço para "coletar" os dados do cliente e posição no vetor  
+int buscaTipo(int tipo, int *pos, Quarto *quarto)
+{
+    int tam, i;
+    Quarto *vetor = lerArquivoQuarto(&tam);
+    char ch;
+
+
+    for(i = 0; i < tam; i++)
+    {
+        if(vetor[i].tipo == tipo) 
+        {
+            do
+            {
+                printf("\nQuarto encontrado: \n");
+
+                exibirQuarto(vetor[i], 1);
+
+                printf("\nEsse quarto? ");
+                ch = getchar();
+                limpaBuffer();
+
+                if(ch == 'S' || ch == 's')
+                {
+                    *pos = i;
+                    *quarto = vetor[i];
+                    return 1;
+                }
+                else if(ch == 'N' || ch == 'n')
+                {
+                    printf("\nBuscando outro quarto...\n");
+                }
+                else
+                    printf("\nOpção inválida!!\n");
+            }while(ch != 'N' && ch != 'n');
+        }
+    }
+    free(vetor);
+    printf("\nQuarto não encontrado.\n");
+    return 0;
+}
+
+// Função para buscar um quarto pelo seu status
+// Recebe o status a ser buscado, o endereço para "coletar" os dados do cliente e posição no vetor  
+int buscaStatus(int status, int *pos, Quarto *quarto)
+{
+    int tam, i;
+    Quarto *vetor = lerArquivoQuarto(&tam);
+    char ch;
+
+    for(i = 0; i < tam; i++)
+    {
+        if(vetor[i].status == status) 
+        {
+            do
+            {
+                printf("\nQuarto encontrado: \n");
+
+                exibirQuarto(vetor[i], 1);
+
+                printf("\nEsse quarto? ");
+                ch = getchar();
+                limpaBuffer();
+
+                if(ch == 'S' || ch == 's')
+                {
+                    *pos = i;
+                    *quarto = vetor[i];
+                    return 1;
+                }
+                else if(ch == 'N' || ch == 'n')
+                {
+                    printf("\nBuscando outro quarto...\n");
+                }
+                else
+                    printf("\nOpção inválida!!\n");
+            }while(ch != 'N' && ch != 'n');
+        }
+    }
+    free(vetor);
+    printf("\nQuarto não encontrado.\n");
+    return 0;
+}
+
+// Função para buscar um quarto pelo seu número (programa)
 // Recebe o endereço para "coletar" os dados do quarto, sua posição no vetor e o "número do quarto buscado"
 int buscaNumQuarto(Quarto *quarto, int *pos, int numero)
 {
@@ -1478,7 +1664,267 @@ void cadastrarEmail(char *email)
 
 ////////////////////////  SEÇÃO QUARTO  ////////////////////////
 
+// Função para verificar se não há outro quarto com o mesmo número
+// Recebe o número a ser buscado
+int numQuartoExiste(int numero)
+{
+    int tam, i;
+    Quarto *vetor = lerArquivoQuarto(&tam);
 
+    if(vetor != NULL && tam > 0)
+    {
+        for(i = 0; i < tam; i++)
+        {
+            if (vetor[i].numero == numero) 
+            {
+                free(vetor);
+                return 1;
+            }
+        }
+    }
+    free(vetor);
+    return 0;
+}
+
+// Função para CADASTRAR o quarto
+void cadastroQuarto()
+{
+    Quarto novoQuarto;
+
+    printf("\nCADASTRO DE QUARTOS:\n");
+    do
+    {
+        novoQuarto.numero = leiaInt("\nDigite o número do quarto: ");
+
+        if(numQuartoExiste(novoQuarto.numero)) 
+        {
+            printf("\nERRO! O número do quarto já existe. Tente novamente.\n");
+        }
+        else if(novoQuarto.numero <= 0)
+        {
+            printf("\nERRO! O Número digitado é inválido. Tente novamente.\n");
+        }
+    } while (numQuartoExiste(novoQuarto.numero) || novoQuarto.numero <= 0);
+
+    novoQuarto.tipo = menuTipo();
+    novoQuarto.status = menuStatus(0);
+    novoQuarto.preco = leiaFloat("\nDigite o preço do quarto: R$");
+
+    salvarQuarto(novoQuarto);
+
+    printf("\nQuarto cadastrado com sucesso!\n");
+}
+
+// Função para CONSULTAR quarto
+// Recebe a posição no vetor e o endereço para "coletar" os dados do cliente
+int consultarQuarto(int *pos, Quarto *quarto)
+{
+    int op, tam;
+    Quarto *vetor = lerArquivoQuarto(&tam);
+
+    if(vetor != NULL && tam > 0)
+    {
+        do
+        {
+            op = menuBusca();
+            switch(op)
+            {
+                case 1: 
+                {
+                    int numeroConsulta = leiaInt("\nDigite o número do quarto para consultar: ");
+                    buscaNumero(numeroConsulta, pos, quarto);
+                    break;
+                }
+
+                case 2: 
+                {
+                    int tipoConsulta = menuTipo();
+                    buscaTipo(tipoConsulta, pos, quarto);
+                    break;
+                }
+
+                case 3:
+                {
+                    int statusConsulta = menuStatus(1);
+                    buscaStatus(statusConsulta, pos, quarto);
+                    break;
+                }
+
+                case 0:
+                {
+                    printf("\nVoltando...\n");
+                    break;
+                }
+
+                default:
+                    printf("\nOpção inválida!\n");
+            }
+        } while (op < 0 || op > 3);
+        return op;
+    }
+    else
+        printf("\nNenhum quarto foi cadastrado ainda!!\n");
+    return 0;
+}
+
+// Função para EDITAR quarto
+void editarQuarto()
+{
+    int op, pos;
+    Quarto quarto;
+    
+
+    if(consultarQuarto(&pos, &quarto))
+    {
+        if(quarto.status == LIVRE)
+        {
+            do
+            {
+                printf("\n-----Editar-----");
+                printf("\n[1] - Tipo");
+                printf("\n[2] - Valor");
+                printf("\n[0] - Voltar");
+                op = leiaInt("\nOpção: ");
+
+                switch(op)
+                {
+                    case 1:
+                        quarto.tipo = menuTipo();
+                        break;
+
+                    case 2:
+                        quarto.preco = leiaFloat("\nPreço: R$");
+                        break;
+
+                    case 0:
+                        printf("\nVoltando...\n");
+                        break;
+
+                    default:
+                        printf("\nOpção inválida!\n");
+                }
+            }while(op < 0 || op > 2);
+
+            if(op > 0)
+            {
+                printf("\nDados alterados com sucesso!!\n");
+                exibirQuarto(quarto, 1);
+
+                int tam;
+                Quarto *vetor = lerArquivoQuarto(&tam);
+                vetor[pos] = quarto;
+
+                refazerArquivoQuarto(vetor, tam);
+                free(vetor);
+            }
+        }
+        else if(quarto.status == OCUPADO || quarto.status == RESERVADO)
+            printf("\nNão é possível editar quartos reservados/ocupados\n");
+    }
+}
+
+// Função para EXCLUIR quarto
+void excluirQuarto()
+{
+    int pos, tam;
+    char ch;
+    Quarto quarto;
+    Quarto *vetor = lerArquivoQuarto(&tam);
+
+    if(consultarQuarto(&pos, &quarto))
+    {
+        if(quarto.status == LIVRE)
+        {
+            do
+            {
+                printf("Tem certeza que deseja excluir? Os dados desse quarto serão perdidos para sempre\n");
+                ch = getchar();
+                limpaBuffer();
+                if(ch == 'S' || ch == 's')
+                {
+                    tam--;
+                    for(int i = pos; i < tam; i++)
+                        vetor[i] = vetor[i+1];
+                    
+                    refazerArquivoQuarto(vetor, tam);
+                    printf("\nQuarto excluído com sucesso\n");
+                }
+                else if (ch == 'N' || ch == 'n')
+                    printf("\nCancelando...\n");
+
+                else
+                    printf("\nOpção inválida!!\n");
+
+            } while(ch != 'N' && ch != 'n' && ch != 's' && ch != 'S');
+        }
+        else if(quarto.status == OCUPADO || quarto.status == RESERVADO)
+            printf("\nNão é possível excluir quartos reservados/ocupados\n");
+    }
+}
+
+//Função para EXIBIR TODAS as informações dos quartos
+void exibirTodosQuartos()
+{
+    int tam, i;
+    Quarto *vetor = lerArquivoQuarto(&tam);
+
+    if(vetor != NULL && tam > 0)
+    {
+        printf("\n----- INFORMAÇÕES DOS QUARTOS -----\n");
+
+        for(i = 0; i < tam; i++)
+        {
+            exibirQuarto(vetor[i], 1);
+
+        }
+    }
+    else
+        printf("\nNenhum quarto foi cadastrado ainda!!\n");
+    free(vetor);
+}
+
+int secaoQuarto()
+{
+    int op, pos;
+    Quarto quarto;
+
+    do
+    {
+        op = menuQuartos();
+        switch(op)
+        {
+            case 1:
+                cadastroQuarto();
+                break;
+            
+            case 2:
+                consultarQuarto(&pos, &quarto);
+                break;
+
+            case 3:
+                editarQuarto();
+                break;
+            
+            case 4:
+                excluirQuarto();
+                break;
+
+            case 5:
+                exibirTodosQuartos();
+                break;
+            
+            case 0:
+            {
+                printf("\nVoltando...\n");
+                break;
+            }
+
+            default:
+                printf("\nOpção inválida!\n");
+        }
+    } while(op != 0);
+    return 0;
+}
 
 ////////////////////////  SEÇÃO CLIENTE  ////////////////////////
 
@@ -1694,7 +2140,7 @@ void excluirCliente()
                 if(ch == 'S' || ch == 's')
                 {
                     tam--;
-                    for(int i = pos; i < tam; i++)
+                    for(i = pos; i < tam; i++)
                         vetor[i] = vetor[i+1];
                     
                     refazerArquivoCliente(vetor, tam);
@@ -2245,7 +2691,7 @@ int main()
         switch(op)
         {
             case 1:
-                // secaoQuarto();
+                secaoQuarto();
                 break;
 
             case 2:
