@@ -1987,11 +1987,10 @@ void excluirReserva()
                     {
                         tamReserva--;
                         for(i = posReserva; i < tamReserva; i++)
-                        {
                             vetorReserva[i] = vetorReserva[i+1];
+                            
                         refazerArquivoReserva(vetorReserva, tamReserva);
                             printf("\nReserva excluída com sucesso\n");
-                        }
 
                         vetorReserva = lerArquivoReserva(&tamReserva);
                         for(i = 0; i < tamReserva; i++)
