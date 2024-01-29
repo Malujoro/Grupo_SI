@@ -1837,7 +1837,7 @@ void excluirQuarto()
         {
             do
             {
-                printf("Tem certeza que deseja excluir? Os dados desse quarto serão perdidos para sempre\n");
+                printf("\nTem certeza que deseja excluir? Os dados desse quarto serão perdidos para sempre\n");
                 ch = getchar();
                 limpaBuffer();
                 if(ch == 'S' || ch == 's')
@@ -1949,7 +1949,7 @@ void cadastrarCliente(Cliente *pessoa, int cpf)
     if(salvarCliente(aux))
     {
         printf("\nCliente cadastrado com sucesso!\n");
-        exibirCliente(*pessoa);
+        exibirCliente(aux);
         *pessoa = aux;
     }
 }
@@ -2130,12 +2130,12 @@ void excluirCliente()
             if(strcmp(vetorReserva[i].cpf, pessoa.cpf) == 0)
                 break;
         }
-        if(i == tamReserva)
+        if((i == tamReserva) || tamReserva == -1)
         {
 
             do
             {
-                printf("Tem certeza que deseja excluir? Os dados desse cliente serão perdidos para sempre\n");
+                printf("\nTem certeza que deseja excluir? Os dados desse cliente serão perdidos para sempre\n");
                 ch = getchar();
                 limpaBuffer();
                 if(ch == 'S' || ch == 's')
@@ -2435,7 +2435,7 @@ void excluirReserva()
             {
                 do
                 {
-                    printf("Tem certeza que deseja excluir? Os dados dessa reserva serão perdidos para sempre\n");
+                    printf("\nTem certeza que deseja excluir? Os dados dessa reserva serão perdidos para sempre\n");
                     ch = getchar();
                     limpaBuffer();
                     if(ch == 'S' || ch == 's')
