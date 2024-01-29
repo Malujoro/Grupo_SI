@@ -551,10 +551,10 @@ int salvarReserva(Reserva item)
 // Recebe o endereço do vetor que guarda todas as informações e seu tamanho
 void refazerArquivoCliente(Cliente *vetor, int tam)
 {
-    // FILE *arquivo2 = abrirArquivo("clienteBackup.bin", "wb");
-    // for(int i = 0; i < tam; i++)
-    //     fwrite(&vetor[i], sizeof(Cliente), 1, arquivo2);
-    // fclose(arquivo2);
+    FILE *arquivo2 = abrirArquivo("clienteBackup.bin", "wb");
+    for(int i = 0; i < tam; i++)
+        fwrite(&vetor[i], sizeof(Cliente), 1, arquivo2);
+    fclose(arquivo2);
 
     FILE *arquivo = abrirArquivo(ARQCLIENTE, "wb");
     fclose(arquivo);
@@ -567,6 +567,11 @@ void refazerArquivoCliente(Cliente *vetor, int tam)
 // Recebe o endereço do vetor que guarda todas as informações e seu tamanho
 void refazerArquivoReserva(Reserva *vetor, int tam)
 {
+    FILE *arquivo2 = abrirArquivo("reservaBackup.bin", "wb");
+    for(int i = 0; i < tam; i++)
+        fwrite(&vetor[i], sizeof(Cliente), 1, arquivo2);
+    fclose(arquivo2);
+
     FILE *arquivo = abrirArquivo(ARQRESERVA, "wb");
     fclose(arquivo);
 
@@ -578,6 +583,11 @@ void refazerArquivoReserva(Reserva *vetor, int tam)
 // Recebe o endereço do vetor que guarda todas as informações e seu tamanho
 void refazerArquivoQuarto(Quarto *vetor, int tam)
 {
+    FILE *arquivo2 = abrirArquivo("quartoBackup.bin", "wb");
+    for(int i = 0; i < tam; i++)
+        fwrite(&vetor[i], sizeof(Cliente), 1, arquivo2);
+    fclose(arquivo2);
+
     FILE *arquivo = abrirArquivo(ARQQUARTO, "wb");
     fclose(arquivo);
 
@@ -1763,7 +1773,7 @@ int secaoCliente()
 ////////////////////////  SEÇÃO RESERVA  ////////////////////////
 
 // Função para CADASTRAR/REALIZAR reserva
-int realizarReserva()
+int realizarReserva()   
 {
     Reserva item;
     Cliente pessoa;
