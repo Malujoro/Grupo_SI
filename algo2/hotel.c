@@ -2077,7 +2077,7 @@ void realizarPagamento()
     if(consultarReservas(&item, &posReserva))
     {
         buscaNumQuarto(&quarto, &posQuarto, item.numQuarto);
-        if(item.pagamento == PENDENTE && strcmp(item.horaSaida, "0") == 0)
+        if(item.pagamento == PENDENTE && strcmp(item.horaSaida, "0") == 0 && strcmp(item.horaEntrada, "0") != 0)
         {
             if(quarto.status == OCUPADO)
             {
@@ -2118,6 +2118,8 @@ void realizarPagamento()
         }
         else if(item.pagamento == PAGO && strcmp(item.horaEntrada, "0") != 0)
             printf("\nPagamento já foi efetuado anteriormente\n");
+        else if(strcmp(item.horaEntrada, "0") == 0)
+                printf("\nNão é possível realizar pagamento sem efetuar Check-in\n");
     }
     free(vetorQuarto);
     free(vetorReserva);
