@@ -2357,6 +2357,8 @@ int realizarReserva()
         }while(vetorReserva != NULL && i < tamReserva);
         free(vetorReserva);
 
+        exibirReserva(item);
+
         if(salvarReserva(item))
             printf("\nReserva feita com sucesso!!\n");
 
