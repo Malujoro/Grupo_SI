@@ -1801,12 +1801,14 @@ int realizarReserva()
         printf("\nQuartos livres nesse período: ");
         for(i = 0; i < tamQuarto; i++)
         {
+            // Exibe os quartos com status livres
             if(vetorQuarto[i].status == LIVRE)
             {
                 exibirQuarto(vetorQuarto[i], 0);
                 livres[quant] = vetorQuarto[i].numero;
                 quant++;
             }
+            // Exibe os quartos com status reservado, mas estão livres nessa data
             else if(vetorQuarto[i].status == RESERVADO)
             {
                 for(j = 0; j < tamReserva; j++)
@@ -1816,6 +1818,7 @@ int realizarReserva()
                     if(!((gregorianaJuliana(item.dataEntrada) < gregorianaJuliana(vetorReserva[j].dataEntrada) && gregorianaJuliana(item.dataSaida) < gregorianaJuliana(vetorReserva[j].dataEntrada)) || (gregorianaJuliana(item.dataEntrada) > gregorianaJuliana(vetorReserva[j].dataSaida) && gregorianaJuliana(item.dataSaida) > gregorianaJuliana(vetorReserva[j].dataSaida))))
                         break;
                 }
+                // Caso a nova reserva não entre em conflito com as existentes, exibe o quarto como livre
                 if(j == tamReserva)
                 {
                     exibirQuarto(vetorQuarto[i], 0);
@@ -1824,13 +1827,16 @@ int realizarReserva()
                 }
             }
         }
+        // Caso não existam quartos livres nesse perídoo, a reserva é cancelada
         if(quant == 0)
         {
             printf("\nNão há quartos livres nesse período\n");
             printf("\nCancelando reserva...\n");
             return 0;
         }
+        // Após exibir os quartos livres, o usuário deve digitar sua escolha
         item.numQuarto = leiaInt("\nDigite o número do quarto: ");
+        // Verifica a disponibilidade do quarto
         for(i = 0; i < quant; i++)
         {
             if(item.numQuarto == livres[i])
@@ -1878,15 +1884,17 @@ int realizarReserva()
     // Coloca o quarto como reservado
     buscaNumQuarto(&quarto, &pos, item.numQuarto);
     quarto.status = RESERVADO;
+    // Mesmo que o cliente entra e saia no mesmo dia, o preço mínimo a se pagar é o de 1 diária
     if(quantDias == 0)
         quantDias++;
     item.total = quantDias * quarto.preco; // Total - Calcula automático
     item.pagamento = PENDENTE;
 
+    // Gera a "semente" para aleatorizar os números
     srand(time(NULL));
     
     vetorReserva = lerArquivoReserva(&tamReserva);
-    do // Gera automático - Verifica se não existe antes
+    do // Gera automático - Verifica se não é repetido
     {
         item.numReserva = (rand() % 99999999) + 1; // Gera de 1 a 99999999
         if(vetorReserva != NULL && tamReserva > 0)
