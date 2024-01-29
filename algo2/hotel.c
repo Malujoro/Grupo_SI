@@ -1949,6 +1949,7 @@ void cadastrarCliente(Cliente *pessoa, int cpf)
     if(salvarCliente(aux))
     {
         printf("\nCliente cadastrado com sucesso!\n");
+        exibirCliente(*pessoa);
         *pessoa = aux;
     }
 }
