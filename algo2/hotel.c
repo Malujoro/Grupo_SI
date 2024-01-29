@@ -551,6 +551,11 @@ int salvarReserva(Reserva item)
 // Recebe o endereço do vetor que guarda todas as informações e seu tamanho
 void refazerArquivoCliente(Cliente *vetor, int tam)
 {
+    // FILE *arquivo2 = abrirArquivo("clienteBackup.bin", "wb");
+    // for(int i = 0; i < tam; i++)
+    //     fwrite(&vetor[i], sizeof(Cliente), 1, arquivo2);
+    // fclose(arquivo2);
+
     FILE *arquivo = abrirArquivo(ARQCLIENTE, "wb");
     fclose(arquivo);
 
