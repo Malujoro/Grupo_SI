@@ -45,7 +45,6 @@ calculaMedia(Lista, Media) :-
     Media is Soma / Tam.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % Regra para contar quantas vezes um "Elemento" aparece na lista
 contaIgual([], _, 0) :- !.
 contaIgual([X | T], Elemento, Resultado) :-
@@ -54,21 +53,12 @@ contaIgual([X | T], Elemento, Resultado) :-
     ;
     (!, Resultado is Resultado2)).
 
-% Regra para contar quantos números maiores que o "Elemento" aparecem na lista
-contaMaior([], _, 0) :- !.
-contaMaior([X | T], Elemento, Resultado) :-
-    contaMaior(T, Elemento, Resultado2),
-    ((X > Elemento, !, Resultado is Resultado2 + 1)
+contaMaiorMenor([], _, 0, 0) :- !.
+contaMaiorMenor([X | T], Elemento, Maior, Menor) :-
+    contaMaiorMenor(T, Elemento, Maior2, Menor2),
+    ((X > Elemento, !, Maior is Maior2 + 1, Menor is Menor2)
     ;
-    (!, Resultado is Resultado2)).
-
-% Regra para contar quantos números menores que o "Elemento" aparecem na lista
-contaMenor([], _, 0) :- !.
-contaMenor([X | T], Elemento, Resultado) :-
-    contaMenor(T, Elemento, Resultado2),
-    ((X < Elemento, !, Resultado is Resultado2 + 1)
-    ;
-    (!, Resultado is Resultado2)).
+    (!, Maior is Maior2, Menor is Menor2 + 1)).
 
 % Regra para contar quantas vezes um "Elemento" aparece nos pacientes diagnosticados
 contaIgualDiabetico([], [], _, 0) :- !.
@@ -96,78 +86,116 @@ contaMenorDiabetico([X | T], [X2 | T2], Elemento, Resultado) :-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
+% Regra para "Montar" as listas com todos os dados de todos os pacientes (exceto nome)
+listaDados([], [], [], [], [], [], [], [], [], []) :- !.
+listaDados([[[_, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose], Diabete] | T],
+    [Sexo | TSexo], [Idade | TIdade], [Hipertensao | THipertensao], [Cardiaco | TCardiaco], [Fumante | TFumante], [IMC | TIMC], [Hemoglobina | THemoglobina], [Glicose | TGlicose], [Diabete | TDiabete]) :- 
+    listaDados(T, TSexo, TIdade, THipertensao, TCardiaco, TFumante, TIMC, THemoglobina, TGlicose, TDiabete).
+
 % Regra para "Montar" uma lista com o sexo de todos os pacientes
-listaSexo([], []) :- !.
-listaSexo([[[_, Sexo, _, _, _, _, _, _, _], _] | T], [Sexo | T2]) :- 
-    listaSexo(T, T2).
-
-% Regra para "Montar" uma lista com as Idades de todos os pacientes
-listaIdade([], []) :- !.
-listaIdade([[[_, _, Idade, _, _, _, _, _, _], _] | T], [Idade | T2]) :- 
-    listaIdade(T, T2).
-
-% Regra para "Montar" uma lista com a existência de Hipertensão de todos os pacientes
-listaHipertensao([], []) :- !.
-listaHipertensao([[[_, _, _, Hipertensao, _, _, _, _, _], _] | T], [Hipertensao | T2]) :- 
-    listaHipertensao(T, T2).
-
-% Regra para "Montar" uma lista com os IMCs de todos os pacientes
-listaIMC([], []) :- !.
-listaIMC([[[_, _, _, _, _, _, IMC, _, _], _] | T], [IMC | T2]) :- 
-    listaIMC(T, T2).
-
-% Regra para "Montar" uma lista com o índice de Hemoglobina de todos os pacientes
-listaHemoglobina([], []) :- !.
-listaHemoglobina([[[_, _, _, _, _, _, _, Hemoglobina, _], _] | T], [Hemoglobina | T2]) :- 
-    listaHemoglobina(T, T2).
-
-% Regra para "Montar" uma lista com o índice de Glicose de todos os pacientes
-listaGlicose([], []) :- !.
-listaGlicose([[[_, _, _, _, _, _, _, _, Glicose], _] | T], [Glicose | T2]) :- 
-    listaGlicose(T, T2).
-
-% Regra para "Montar" uma lista com a "posição" dos diabéticos
-listaDiabete([], []) :- !.
-listaDiabete([[_, Diabete] | T], [Diabete | T2]) :- 
-    listaDiabete(T, T2).
+% listaSexo([], []) :- !.
+% listaSexo([[[_, Sexo, _, _, _, _, _, _, _], _] | T], [Sexo | T2]) :- 
+%     listaSexo(T, T2).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% sintomas([Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose])
 % Serão calculados os "sintomas" ou fatores com mais chances de indicar diabetes.
 % Será levado em consideração o fator com maior porcentagem de ocorrência.
 % Por exemplo: [Feminino - 8/15 - 53,3% | Masculino - 4/14 - 28,5%], então aparentemente pessoas do gênero feminino têm mais chances de diabetes
 
-    sintomas([Sexo, Hipertensao]) :-
+    % sintomas([Sexo, [MediaIdade, SitIdade], Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose]) :-
+    sintomas([Sexo, [MediaIdade, SitIdade], Hipertensao, Cardiaco, Fumante, [MediaIMC, SitIMC], [MediaHemoglobina, SitHemoglobina], [MediaGlicose, SitGlicose]]) :-
     listaPacientes(Lista),
-    listaDiabete(Lista, ListaDiabete),
+    % listaDados(Lista, ListaSexo, ListaIdade, ListaHipertensao, ListaCardiaco, ListaFumante, ListaIMC, ListaHemoglobina, ListaGlicose, ListaDiabete),
+    listaDados(Lista, ListaSexo, ListaIdade, ListaHipertensao, ListaCardiaco, ListaFumante, ListaIMC, ListaHemoglobina, ListaGlicose, ListaDiabete),
 
     % Será calculado a quantidade de gente do sexo feminino e masculino cadastrado no sistema, bem como a porcentagem de diabéticos por gênero
-    listaSexo(Lista, ListaSexo),
+    % sintomas([Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose])
     contaIgual(ListaSexo, feminino, QuantFeminino),
-    contaIgual(ListaSexo, masculino, QuantMasculino),
     contaIgualDiabetico(ListaSexo, ListaDiabete, feminino, QuantFeminino2),
+    contaIgual(ListaSexo, masculino, QuantMasculino),
     contaIgualDiabetico(ListaSexo, ListaDiabete, masculino, QuantMasculino2),
-    write('Mulheres: '), write(QuantFeminino2), write('/'), write(QuantFeminino), nl,
+    write('Sexo: '), nl,
     write('Homens: '), write(QuantMasculino2), write('/'), write(QuantMasculino), nl,
+    write('Mulheres: '), write(QuantFeminino2), write('/'), write(QuantFeminino), nl, nl,
     ((QuantFeminino2/QuantFeminino >= QuantMasculino2/QuantMasculino, !, Sexo = feminino);(Sexo = masculino)),
 
+    calculaMedia(ListaIdade, MediaIdade),
+    contaMaiorMenor(ListaIdade, MediaIdade, MaiorIdade, MenorIdade),
+    contaMaiorDiabetico(ListaIdade, ListaDiabete, MediaIdade, MaiorIdade2),
+    contaMenorDiabetico(ListaIdade, ListaDiabete, MediaIdade, MenorIdade2),
+    write('Idade: '), nl,
+    write('Menor: '), write(MenorIdade2), write('/'), write(MenorIdade), nl,
+    write('Maior: '), write(MaiorIdade2), write('/'), write(MaiorIdade), nl, nl,
+    ((MaiorIdade2/MaiorIdade >= MenorIdade2/MenorIdade, !, SitIdade = maior);(SitIdade = menor)),
+
     % Será calculado a quantidade de gente com hipertensão (ou não) cadastrado no sistema, bem como a porcentagem de diabéticos
-    listaHipertensao(Lista, ListaHipertensao),
     contaIgual(ListaHipertensao, sim, SimHipertensao),
-    contaIgual(ListaHipertensao, nao, NaoHipertensao),
     contaIgualDiabetico(ListaHipertensao, ListaDiabete, sim, SimHipertensao2),
+    contaIgual(ListaHipertensao, nao, NaoHipertensao),
     contaIgualDiabetico(ListaHipertensao, ListaDiabete, nao, NaoHipertensao2),
-    write('Sim: '), write(SimHipertensao2), write('/'), write(SimHipertensao), nl,
+    write('Hipertensão: '), nl,
     write('Não: '), write(NaoHipertensao2), write('/'), write(NaoHipertensao), nl,
-    ((SimHipertensao2/SimHipertensao >= NaoHipertensao2/NaoHipertensao, !, Hipertensao = sim);(Hipertensao = nao)).
+    write('Sim: '), write(SimHipertensao2), write('/'), write(SimHipertensao), nl, nl,
+    ((SimHipertensao2/SimHipertensao >= NaoHipertensao2/NaoHipertensao, !, Hipertensao = sim);(Hipertensao = nao)),
+
+    contaIgual(ListaCardiaco, sim, SimCardiaco),
+    contaIgualDiabetico(ListaCardiaco, ListaDiabete, sim, SimCardiaco2),
+    contaIgual(ListaCardiaco, nao, NaoCardiaco),
+    contaIgualDiabetico(ListaCardiaco, ListaDiabete, nao, NaoCardiaco2),
+    write('Cardíaco: '), nl,
+    write('Não: '), write(NaoCardiaco2), write('/'), write(NaoCardiaco), nl,
+    write('Sim: '), write(SimCardiaco2), write('/'), write(SimCardiaco), nl, nl,
+    ((SimCardiaco2/SimCardiaco >= NaoCardiaco2/NaoCardiaco, !, Cardiaco = sim);(Cardiaco = nao)),
+    % sintomas([Fumante, IMC, Hemoglobina, Glicose])
+
+    contaIgual(ListaFumante, sim, SimFumante),
+    contaIgualDiabetico(ListaFumante, ListaDiabete, sim, SimFumante2),
+    contaIgual(ListaFumante, passado, PassadoFumante),
+    contaIgualDiabetico(ListaFumante, ListaDiabete, passado, PassadoFumante2),
+    contaIgual(ListaFumante, nunca, NuncaFumante),
+    contaIgualDiabetico(ListaFumante, ListaDiabete, nunca, NuncaFumante2),
+    write('Fumante: '), nl,
+    write('Nunca: '), write(NuncaFumante2), write('/'), write(NuncaFumante), nl,
+    write('Passado: '), write(PassadoFumante2), write('/'), write(PassadoFumante), nl,
+    write('Sim: '), write(SimFumante2), write('/'), write(SimFumante), nl, nl,
+    ((SimFumante2/SimFumante >= NuncaFumante2/NuncaFumante, SimFumante2/SimFumante >= PassadoFumante2/PassadoFumante, !, Fumante = sim);
+     ((PassadoFumante2/PassadoFumante >= NuncaFumante2/NuncaFumante, !, Fumante = passado); (Fumante = nunca))
+    ),
+
+    calculaMedia(ListaIMC, MediaIMC),
+    contaMaiorMenor(ListaIMC, MediaIMC, MaiorIMC, MenorIMC),
+    contaMaiorDiabetico(ListaIMC, ListaDiabete, MediaIMC, MaiorIMC2),
+    contaMenorDiabetico(ListaIMC, ListaDiabete, MediaIMC, MenorIMC2),
+    write('IMC: '), nl,
+    write('Menor: '), write(MenorIMC2), write('/'), write(MenorIMC), nl,
+    write('Maior: '), write(MaiorIMC2), write('/'), write(MaiorIMC), nl, nl,
+    ((MaiorIMC2/MaiorIMC >= MenorIMC2/MenorIMC, !, SitIMC = maior);(SitIMC = menor)),
+
+    calculaMedia(ListaHemoglobina, MediaHemoglobina),
+    contaMaiorMenor(ListaHemoglobina, MediaHemoglobina, MaiorHemoglobina, MenorHemoglobina),
+    contaMaiorDiabetico(ListaHemoglobina, ListaDiabete, MediaHemoglobina, MaiorHemoglobina2),
+    contaMenorDiabetico(ListaHemoglobina, ListaDiabete, MediaHemoglobina, MenorHemoglobina2),
+    write('Hemoglobina: '), nl,
+    write('Menor: '), write(MenorHemoglobina2), write('/'), write(MenorHemoglobina), nl,
+    write('Maior: '), write(MaiorHemoglobina2), write('/'), write(MaiorHemoglobina), nl, nl,
+    ((MaiorHemoglobina2/MaiorHemoglobina >= MenorHemoglobina2/MenorHemoglobina, !, SitHemoglobina = maior);(SitHemoglobina = menor)),
+
+    calculaMedia(ListaGlicose, MediaGlicose),
+    contaMaiorMenor(ListaGlicose, MediaGlicose, MaiorGlicose, MenorGlicose),
+    contaMaiorDiabetico(ListaGlicose, ListaDiabete, MediaGlicose, MaiorGlicose2),
+    contaMenorDiabetico(ListaGlicose, ListaDiabete, MediaGlicose, MenorGlicose2),
+    write('Glicose: '), nl,
+    write('Menor: '), write(MenorGlicose2), write('/'), write(MenorGlicose), nl,
+    write('Maior: '), write(MaiorGlicose2), write('/'), write(MaiorGlicose), nl, nl,
+    ((MaiorGlicose2/MaiorGlicose >= MenorGlicose2/MenorGlicose, !, SitGlicose = maior);(SitGlicose = menor)).
 
 
-main() :-
-    listaPacientes(Lista),
+% main() :-
+%     listaPacientes(Lista),
     
-    listaDiabete(Lista, Diabete),
-    write(Diabete), nl.
+%     listaDiabete(Lista, Diabete),
+%     write(Diabete), nl.
     % listaIdade(Lista, Idade),
     % calculaMedia(Idade, MediaIdade),
     
