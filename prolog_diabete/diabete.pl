@@ -31,12 +31,17 @@ paciente(['Frederico',   masculino, 54.0, nao, nao, passado,    30.41,  5.0, 158
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Regra para montar uma lista com os dados de todos os pacientes
+% listaPacientes(Lista) :-
+%     findall([[Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose], Diabete],
+%         paciente([Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose], Diabete),
+%         Lista
+%         ).
+    
 listaPacientes(Lista) :-
-    findall([[Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose], Diabete],
-        paciente([Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose], Diabete),
+    findall([ConjuntoCaracteristicas, Diabete],
+        paciente(ConjuntoCaracteristicas, Diabete),
         Lista
         ).
-
 % Regra para calcular a média de uma lista
 calculaMedia(Lista, Media) :-
     sumlist(Lista, Soma),
@@ -115,18 +120,18 @@ listaDados([[[_, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, 
     contaIgualDiabetico(ListaSexo, ListaDiabete, feminino, QuantFeminino2),
     contaIgual(ListaSexo, masculino, QuantMasculino),
     contaIgualDiabetico(ListaSexo, ListaDiabete, masculino, QuantMasculino2),
-    write('Sexo: '), nl,
-    write('Homens: '), write(QuantMasculino2), write('/'), write(QuantMasculino), nl,
-    write('Mulheres: '), write(QuantFeminino2), write('/'), write(QuantFeminino), nl, nl,
+    % write('Sexo: '), nl,
+    % write('Homens: '), write(QuantMasculino2), write('/'), write(QuantMasculino), nl,
+    % write('Mulheres: '), write(QuantFeminino2), write('/'), write(QuantFeminino), nl, nl,
     ((QuantFeminino2/QuantFeminino >= QuantMasculino2/QuantMasculino, !, Sexo = feminino);(Sexo = masculino)),
 
     calculaMedia(ListaIdade, MediaIdade),
     contaMaiorMenor(ListaIdade, MediaIdade, MaiorIdade, MenorIdade),
     contaMaiorDiabetico(ListaIdade, ListaDiabete, MediaIdade, MaiorIdade2),
     contaMenorDiabetico(ListaIdade, ListaDiabete, MediaIdade, MenorIdade2),
-    write('Idade: '), nl,
-    write('Menor: '), write(MenorIdade2), write('/'), write(MenorIdade), nl,
-    write('Maior: '), write(MaiorIdade2), write('/'), write(MaiorIdade), nl, nl,
+    % write('Idade: '), nl,
+    % write('Menor: '), write(MenorIdade2), write('/'), write(MenorIdade), nl,
+    % write('Maior: '), write(MaiorIdade2), write('/'), write(MaiorIdade), nl, nl,
     ((MaiorIdade2/MaiorIdade >= MenorIdade2/MenorIdade, !, SitIdade = maior);(SitIdade = menor)),
 
     % Será calculado a quantidade de gente com hipertensão (ou não) cadastrado no sistema, bem como a porcentagem de diabéticos
@@ -134,18 +139,18 @@ listaDados([[[_, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, 
     contaIgualDiabetico(ListaHipertensao, ListaDiabete, sim, SimHipertensao2),
     contaIgual(ListaHipertensao, nao, NaoHipertensao),
     contaIgualDiabetico(ListaHipertensao, ListaDiabete, nao, NaoHipertensao2),
-    write('Hipertensão: '), nl,
-    write('Não: '), write(NaoHipertensao2), write('/'), write(NaoHipertensao), nl,
-    write('Sim: '), write(SimHipertensao2), write('/'), write(SimHipertensao), nl, nl,
+    % write('Hipertensão: '), nl,
+    % write('Não: '), write(NaoHipertensao2), write('/'), write(NaoHipertensao), nl,
+    % write('Sim: '), write(SimHipertensao2), write('/'), write(SimHipertensao), nl, nl,
     ((SimHipertensao2/SimHipertensao >= NaoHipertensao2/NaoHipertensao, !, Hipertensao = sim);(Hipertensao = nao)),
 
     contaIgual(ListaCardiaco, sim, SimCardiaco),
     contaIgualDiabetico(ListaCardiaco, ListaDiabete, sim, SimCardiaco2),
     contaIgual(ListaCardiaco, nao, NaoCardiaco),
     contaIgualDiabetico(ListaCardiaco, ListaDiabete, nao, NaoCardiaco2),
-    write('Cardíaco: '), nl,
-    write('Não: '), write(NaoCardiaco2), write('/'), write(NaoCardiaco), nl,
-    write('Sim: '), write(SimCardiaco2), write('/'), write(SimCardiaco), nl, nl,
+    % write('Cardíaco: '), nl,
+    % write('Não: '), write(NaoCardiaco2), write('/'), write(NaoCardiaco), nl,
+    % write('Sim: '), write(SimCardiaco2), write('/'), write(SimCardiaco), nl, nl,
     ((SimCardiaco2/SimCardiaco >= NaoCardiaco2/NaoCardiaco, !, Cardiaco = sim);(Cardiaco = nao)),
     % sintomas([Fumante, IMC, Hemoglobina, Glicose])
 
@@ -155,10 +160,10 @@ listaDados([[[_, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, 
     contaIgualDiabetico(ListaFumante, ListaDiabete, passado, PassadoFumante2),
     contaIgual(ListaFumante, nunca, NuncaFumante),
     contaIgualDiabetico(ListaFumante, ListaDiabete, nunca, NuncaFumante2),
-    write('Fumante: '), nl,
-    write('Nunca: '), write(NuncaFumante2), write('/'), write(NuncaFumante), nl,
-    write('Passado: '), write(PassadoFumante2), write('/'), write(PassadoFumante), nl,
-    write('Sim: '), write(SimFumante2), write('/'), write(SimFumante), nl, nl,
+    % write('Fumante: '), nl,
+    % write('Nunca: '), write(NuncaFumante2), write('/'), write(NuncaFumante), nl,
+    % write('Passado: '), write(PassadoFumante2), write('/'), write(PassadoFumante), nl,
+    % write('Sim: '), write(SimFumante2), write('/'), write(SimFumante), nl, nl,
     ((SimFumante2/SimFumante >= NuncaFumante2/NuncaFumante, SimFumante2/SimFumante >= PassadoFumante2/PassadoFumante, !, Fumante = sim);
      ((PassadoFumante2/PassadoFumante >= NuncaFumante2/NuncaFumante, !, Fumante = passado); (Fumante = nunca))
     ),
@@ -167,27 +172,27 @@ listaDados([[[_, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, 
     contaMaiorMenor(ListaIMC, MediaIMC, MaiorIMC, MenorIMC),
     contaMaiorDiabetico(ListaIMC, ListaDiabete, MediaIMC, MaiorIMC2),
     contaMenorDiabetico(ListaIMC, ListaDiabete, MediaIMC, MenorIMC2),
-    write('IMC: '), nl,
-    write('Menor: '), write(MenorIMC2), write('/'), write(MenorIMC), nl,
-    write('Maior: '), write(MaiorIMC2), write('/'), write(MaiorIMC), nl, nl,
+    % write('IMC: '), nl,
+    % write('Menor: '), write(MenorIMC2), write('/'), write(MenorIMC), nl,
+    % write('Maior: '), write(MaiorIMC2), write('/'), write(MaiorIMC), nl, nl,
     ((MaiorIMC2/MaiorIMC >= MenorIMC2/MenorIMC, !, SitIMC = maior);(SitIMC = menor)),
 
     calculaMedia(ListaHemoglobina, MediaHemoglobina),
     contaMaiorMenor(ListaHemoglobina, MediaHemoglobina, MaiorHemoglobina, MenorHemoglobina),
     contaMaiorDiabetico(ListaHemoglobina, ListaDiabete, MediaHemoglobina, MaiorHemoglobina2),
     contaMenorDiabetico(ListaHemoglobina, ListaDiabete, MediaHemoglobina, MenorHemoglobina2),
-    write('Hemoglobina: '), nl,
-    write('Menor: '), write(MenorHemoglobina2), write('/'), write(MenorHemoglobina), nl,
-    write('Maior: '), write(MaiorHemoglobina2), write('/'), write(MaiorHemoglobina), nl, nl,
+    % write('Hemoglobina: '), nl,
+    % write('Menor: '), write(MenorHemoglobina2), write('/'), write(MenorHemoglobina), nl,
+    % write('Maior: '), write(MaiorHemoglobina2), write('/'), write(MaiorHemoglobina), nl, nl,
     ((MaiorHemoglobina2/MaiorHemoglobina >= MenorHemoglobina2/MenorHemoglobina, !, SitHemoglobina = maior);(SitHemoglobina = menor)),
 
     calculaMedia(ListaGlicose, MediaGlicose),
     contaMaiorMenor(ListaGlicose, MediaGlicose, MaiorGlicose, MenorGlicose),
     contaMaiorDiabetico(ListaGlicose, ListaDiabete, MediaGlicose, MaiorGlicose2),
     contaMenorDiabetico(ListaGlicose, ListaDiabete, MediaGlicose, MenorGlicose2),
-    write('Glicose: '), nl,
-    write('Menor: '), write(MenorGlicose2), write('/'), write(MenorGlicose), nl,
-    write('Maior: '), write(MaiorGlicose2), write('/'), write(MaiorGlicose), nl, nl,
+    % write('Glicose: '), nl,
+    % write('Menor: '), write(MenorGlicose2), write('/'), write(MenorGlicose), nl,
+    % write('Maior: '), write(MaiorGlicose2), write('/'), write(MaiorGlicose), nl, nl,
     ((MaiorGlicose2/MaiorGlicose >= MenorGlicose2/MenorGlicose, !, SitGlicose = maior);(SitGlicose = menor)).
 
 
@@ -218,4 +223,63 @@ listaDados([[[_, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, 
 calcular_IMC(Peso, Altura, IMC) :- 
     Peso > 0, Altura > 0, IMC is Peso / (Altura * Altura).
 
-% diagnosticar_diabetes([ConjuntoCaracteristicas], Diabetes).
+% Caso o usuário não informe algum dado, o programa irá perguntar
+diagnosticar_diabetes([Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose], Diabetes) :-
+    % Permite apenas átomos como nome
+    (var(Nome) -> repeat, nl, write('Digite seu Nome: '), read(Nome), (atom(Nome) -> true; nl, write('Erro! Digite um nome apenas com letras minúsculas!!'),  nl, fail) ; true),
+
+    % Permite apenas átomos feminino ou masculino como sexo
+    (var(Sexo) -> repeat, nl, write('Digite seu Sexo: '), read(Sexo), ((atom(Sexo), (Sexo = feminino ; Sexo = masculino)) -> true; nl, write('Erro! Digite um masculino ou feminino (letras minúsculas)!!'),  nl, fail) ; true),
+    
+    % Permite apenas números como idade
+    (var(Idade) -> repeat, nl, write('Digite sua Idade: '), read(Idade), (number(Idade) -> true; nl, write('Erro! Digite uma idade válida!!'),  nl, fail) ; true),
+    
+    % Permite apenas átomos sim ou nao como hipertensao
+    (var(Hipertensao) -> repeat, nl, write('Tem Hipertensao? '), read(Hipertensao), ((atom(Hipertensao), (Hipertensao = sim ; Hipertensao = nao)) -> true; nl, write('Erro! Digite sim ou nao (letras minúsculas)!!'),  nl, fail) ; true),
+    
+    % Permite apenas átomos sim ou nao como cardiaco
+    (var(Cardiaco) -> repeat, nl, write('Tem problemas Cardiacos? '), read(Cardiaco), ((atom(Cardiaco), (Cardiaco = sim ; Cardiaco = nao)) -> true; nl, write('Erro! Digite sim ou nao (letras minúsculas)!!'),  nl, fail) ; true),
+    
+    % Permite apenas átomos sim, passado ou nunca como fumante
+    (var(Fumante) -> repeat, nl, write('É Fumante? '), read(Fumante), ((atom(Fumante), (Fumante = sim ; Fumante = passado ; Fumante = nunca)) -> true; nl, write('Erro! Digite sim, passado ou nunca (letras minúsculas)!!'),  nl, fail) ; true),
+    
+    % Permite apenas números como peso
+    (var(IMC) -> repeat, nl, write('Digite seu peso (Kg): '), read(Peso), (number(Peso) -> true; nl, write('Erro! Digite um peso válido!!'),  nl, fail) ; true),
+    
+    % Permite apenas números como altura. Calcula também o IMC
+    (var(IMC) -> repeat, nl, write('Digite sua altura (m): '), read(Altura), (number(Altura) -> calcular_IMC(Peso, Altura, IMC); nl, write('Erro! Digite uma altura válida!!'),  nl, fail) ; true),
+    
+    % Permite apenas números como hemoglobina
+    (var(Hemoglobina) -> repeat, nl, write('Taxa de Hemoglobina: '), read(Hemoglobina), (number(Hemoglobina) -> true; nl, write('Erro! Digite uma taxa válida!!'),  nl, fail) ; true),
+
+    % Permite apenas números como glicose
+    (var(Glicose) -> repeat, nl, write('Taxa de Glicose: '), read(Glicose), (number(Glicose) -> true; nl, write('Erro! Digite uma taxa válida!!'),  nl, fail) ; true),
+    
+    % Cria uma lista com todos os sintomas mais recorrentes em pacientes diagnosticados com diabete
+    sintomas([Sexo2, [MediaIdade, SitIdade], Hipertensao2, Cardiaco2, Fumante2, [MediaIMC, SitIMC], [MediaHemoglobina, SitHemoglobina], [MediaGlicose, SitGlicose]]),
+
+    % Compara os dados inseridos pelo usuário com os obtidos da análise do banco de dados.
+    % Conta quantos "critérios de diabete" a pessoa tem.
+    (SitGlicose = maior -> (Glicose >= MediaGlicose -> Criterio1 = 1; Criterio1 = 0); (Glicose < MediaGlicose -> Criterio1 = 1; Criterio1 = 0)),
+    
+    (SitHemoglobina = maior -> (Hemoglobina >= MediaHemoglobina -> Criterio2 = 1; Criterio2 = 0); (Hemoglobina < MediaHemoglobina -> Criterio2 = 1; Criterio2 = 0)),
+
+    (SitIMC = maior -> (IMC >= MediaIMC -> Criterio3 = 1; Criterio3 = 0); (IMC < MediaIMC -> Criterio3 = 1; Criterio3 = 0)),
+
+    (Hipertensao = Hipertensao2 -> Criterio4 = 1; Criterio4 = 0),
+
+    (Cardiaco = Cardiaco2 -> Criterio5 = 1; Criterio5 = 0),
+
+    (Fumante = Fumante2 -> Criterio6 = 1; Criterio6 = 0),
+
+    (SitIdade = maior -> (Idade >= MediaIdade -> Criterio7 = 1; Criterio7 = 0); (Idade < MediaIdade -> Criterio7 = 1; Criterio7 = 0)),
+
+    (Sexo = Sexo2 -> Criterio8 = 1; Criterio8 = 0),
+
+    Criterio is Criterio1 + Criterio2 + Criterio3 + Criterio4 + Criterio5 + Criterio6 + Criterio7 + Criterio8,
+    nl, write('Você atingiu '), write(Criterio), write(' criterio(s) de diabete'), nl,
+
+    ((Criterio = 0, nl, write('Não foram encontrados indícios de diabete nos dados desse paciente'), Diabetes = nao)
+    ;
+    (Criterio > 2 -> nl, write('As chances do paciente conter diabetes estão altas'), Diabetes = sim ; Diabetes = nao, nl, write('Há chances do paciente desenvolver diabete'))).
+    % (repeat, write('Deseja adicionar esse paciente ao banco de dados? '), read(Resposta), (atom(Resposta), (Resposta = sim ; Resposta = nao) -> Resposta = sim, adicionar_paciente(PESSOA) ; fail)).
