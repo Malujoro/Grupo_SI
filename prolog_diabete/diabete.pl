@@ -289,20 +289,22 @@ adicionar_paciente(ConjuntoCaracteristicas, Diabetes)  :-
 % Regra para Editar um paciente
 editar_paciente(ConjuntoCaracteristicas, Diabetes) :-
     paciente(ConjuntoCaracteristicas, Diabetes),
-    write('Editar: '), nl,
-    write('[1] - Nome'), nl,
-    write('[2] - Sexo'), nl,
-    write('[3] - Idade'), nl,
-    write('[4] - Hipertensão'), nl,
-    write('[5] - Cardiaco'), nl,
-    write('[6] - Fumante'), nl,
-    write('[7] - IMC'), nl,
-    write('[8] - Hemoglobina'), nl,
-    write('[9] - Glicose'), nl,
-    write('[0] - Diabete'), nl,
-    read(Opcao),
     [Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose] = ConjuntoCaracteristicas,
     remover_paciente(ConjuntoCaracteristicas, Diabetes),
+
+    nl, write('Editar: '),
+    nl, write('[1] - Nome'),
+    nl, write('[2] - Sexo'),
+    nl, write('[3] - Idade'),
+    nl, write('[4] - Hipertensão'),
+    nl, write('[5] - Cardiaco'),
+    nl, write('[6] - Fumante'),
+    nl, write('[7] - IMC'),
+    nl, write('[8] - Hemoglobina'),
+    nl, write('[9] - Glicose'),
+    nl, write('[0] - Diabete'),
+    nl, read(Opcao),
+
     ((Opcao = 1, !, leiaNome(Nome2), adicionar_paciente([Nome2, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose], Diabetes));
     (Opcao = 2, !, leiaSexo(Sexo2), adicionar_paciente([Nome, Sexo2, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose], Diabetes));
     (Opcao = 3, !, leiaIdade(Idade2), adicionar_paciente([Nome, Sexo, Idade2, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose], Diabetes));
@@ -316,7 +318,15 @@ editar_paciente(ConjuntoCaracteristicas, Diabetes) :-
 
 % Regra para Remover um paciente
 remover_paciente(ConjuntoCaracteristicas, Diabetes) :-
-    retract(paciente(ConjuntoCaracteristicas, Diabetes)).
+    repeat,
+    paciente(ConjuntoCaracteristicas, Diabetes),
+    nl, write('Esse paciente?'), nl,
+    nl, write('Dados: '), write(ConjuntoCaracteristicas), write(' '), write(Diabetes), nl,
+    read(Opcao),
+    (atom(Opcao), (Opcao = sim ; Opcao = nao) ->
+        (Opcao = sim, retract(paciente(ConjuntoCaracteristicas, Diabetes)), true);
+        write('Erro! Digite sim ou nao (letras minúsculas)!!')
+    ).
 
 % Regra para calcular o IMC
 calcular_IMC(Peso, Altura, IMC) :- 
