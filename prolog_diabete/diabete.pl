@@ -283,7 +283,7 @@ leiaGlicose(Glicose) :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Regra para Adicionar um paciente
 adicionar_paciente(ConjuntoCaracteristicas, Diabetes)  :-
-    verificaLista(ConjuntoCaracteristicas),
+    verificaLista(ConjuntoCaracteristicas), !,
     assert(paciente(ConjuntoCaracteristicas, Diabetes)).
 
 % Regra para Editar um paciente
@@ -376,19 +376,19 @@ diagnosticar_diabetes([Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, H
 
     % Soma os "critérios de diabete" da pessoa.
     Criterio is Criterio1 + Criterio2 + Criterio3 + Criterio4 + Criterio5 + Criterio6 + Criterio7 + Criterio8,
-
+    
+    ((Base = antigo, !, nl, write('Diabetes registrada no banco: '), write(Diabetes2)), nl; true),
+    
     ((Criterio = 0, !, nl, write('Não foram encontrados indícios de diabete nos dados desse paciente'), (Diabetes = nao, Diabetes2 = Diabetes, ! ; nl, write('Erro! É sugerível realizar novos exames')))
     ;
     (Criterio < 2, !, nl, write('Foram encontrados pouquíssimos indícios de diabete nos dados desse paciente'), (Diabetes = nao, Diabetes2 = Diabetes, ! ; nl, write('Erro! É sugerível realizar novos exames')))
     ;
     (Criterio < 5 ->
         !, nl, write('Há chances do paciente desenvolver diabete no futuro'), (Diabetes = nao, Diabetes2 = Diabetes, ! ; nl, write('Erro! É sugerível realizar novos exames')) ;
-        !, nl, write('As chances do paciente conter diabetes estão altíssimas'), (Diabetes = sim, Diabetes2 = Diabetes, ! ; nl, write('Erro! É sugerível realizar novos exames')))),
+        !, nl, write('As chances do paciente conter diabetes estão altíssimas'), (Diabetes = sim, Diabetes2 = Diabetes, ! ; nl, write('Erro! É sugerível realizar novos exames')))
+    ),
 
-    ((Base = novo,
-        Pessoa = [Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose],
-        (repeat, nl, nl, write('Deseja adicionar esse paciente ao banco de dados? '), nl, read(Resposta), (atom(Resposta),
-            (Resposta = sim ; Resposta = nao) -> (Resposta = sim, adicionar_paciente(Pessoa, Diabetes); Resposta = nao, true)
+    (((Base = novo, !, Pessoa = [Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose],
+        (repeat, nl, nl, write('Deseja adicionar esse paciente ao banco de dados? '), nl, read(Resposta), (atom(Resposta), (Resposta = sim ; Resposta = nao) -> (Resposta = sim, adicionar_paciente(Pessoa, Diabetes); Resposta = nao, true)
         ; fail))
-    );
-    true).
+    ));true).
