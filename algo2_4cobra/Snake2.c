@@ -100,7 +100,7 @@ void instrucoes()
     SetConsoleTextAttribute(hConsole, pinturaPadrao);
         
     printf("\n\nPressione qualquer tecla para continuar!\n");
-    getchar();
+    getch();
 }
 
 void vitoria()
@@ -381,7 +381,7 @@ int main()
                     gameOver();
 
                 printf("\nPressione qualquer tecla para voltar ao menu!\n");
-                getchar();
+                getch();
                 system("cls");
                 break;
             case 0:
