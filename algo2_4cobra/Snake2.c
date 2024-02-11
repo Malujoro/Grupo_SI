@@ -18,8 +18,6 @@ typedef struct
     int j;
 } Cobra;
 
-
-
 // Função para limpar o Buffer (caracteres excedentes)
 void limpaBuffer()
 {
@@ -86,7 +84,7 @@ void exibirMatriz(char **matriz)
         printf("%c", CERCA);
 }
 
-void geraAlimento(char **matriz, int *i, int *j)
+void geraAlimento(char **matriz)
 {
     int auxi, auxj, invalido = 1;
     do
@@ -95,15 +93,12 @@ void geraAlimento(char **matriz, int *i, int *j)
         auxj = rand() % TAM;
         if(matriz[auxi][auxj] == CARACTERE)
             invalido = 0;
+
     }while(invalido);
-    *i = auxi;
-    *j = auxj;
     matriz[auxi][auxj] = COMIDA;
 }
 
 // Falta implementar:
-// - Lógica para comer e crescer
-//      - Fazer verificação se a casa tem comida (desenho de comida), e aí tam++ (em tese a movimentação funcionaria tranquilo)
 // - Lógica para perder (bater na parede ou em si)
 //      - Fazer verificação se o movimento não vai exceder as coordenadas da matriz (coordenada < 0 ou == TAM)
 //      - Fazer verificação se a casa está livre (desenho de caractere)
@@ -111,59 +106,114 @@ void geraAlimento(char **matriz, int *i, int *j)
 void acima(char **matriz, int *tamCobra, Cobra *cobra)
 {
     int i;
-    matriz[cobra[0].i-1][cobra[0].j] = CABECA;
-    for(i = 0; i < (*tamCobra)-1; i++)
+
+    // Verifica se a próxima casa é comida, para então crescer o tamanho da cobra
+    if(matriz[cobra[0].i-1][cobra[0].j] == COMIDA)
     {
-        cobra[i + 1] = cobra[i];
-        matriz[cobra[i+1].i][cobra[i+1].j] = matriz[cobra[i].i][cobra[i].j];
+        geraAlimento(matriz);
+        (*tamCobra)++;
     }
-    matriz[cobra[i].i][cobra[i].j] = CARACTERE;
+    // Copia os dados da cauda para a nova cauda 
+    cobra[*tamCobra] = cobra[(*tamCobra)-1];
+
+    // Move a cabeça para cima
+    matriz[cobra[0].i-1][cobra[0].j] = CABECA;
+    for(i = (*tamCobra)-1; i > 0; i--)
+    {
+        // Move o corpo, seguindo a cabeça
+        cobra[i] = cobra[i-1];
+        matriz[cobra[i].i][cobra[i].j] = CORPO;
+    }
+    // "Limpa" o espaço que a cauda passou
+    matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] = CARACTERE;
+    // Atualiza a coordenada da cabeça
     cobra[0].i--;
 }
 
 void abaixo(char **matriz, int *tamCobra, Cobra *cobra)
 {
     int i;
-    matriz[cobra[0].i+1][cobra[0].j] = CABECA;
-    for(i = 0; i < (*tamCobra)-1; i++)
+
+    // Verifica se a próxima casa é comida, para então crescer o tamanho da cobra
+    if(matriz[cobra[0].i+1][cobra[0].j] == COMIDA)
     {
-        cobra[i + 1] = cobra[i];
-        matriz[cobra[i+1].i][cobra[i+1].j] = matriz[cobra[i].i][cobra[i].j];
+        geraAlimento(matriz);
+        (*tamCobra)++;
     }
-    matriz[cobra[i].i][cobra[i].j] = CARACTERE;
+    // Copia os dados da cauda para a nova cauda 
+    cobra[*tamCobra] = cobra[(*tamCobra)-1];
+
+    // Move a cabeça para cima
+    matriz[cobra[0].i+1][cobra[0].j] = CABECA;
+    for(i = (*tamCobra)-1; i > 0; i--)
+    {
+        // Move o corpo, seguindo a cabeça
+        cobra[i] = cobra[i-1];
+        matriz[cobra[i].i][cobra[i].j] = CORPO;
+    }
+    // "Limpa" o espaço que a cauda passou
+    matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] = CARACTERE;
+    // Atualiza a coordenada da cabeça
     cobra[0].i++;
 }
 
 void direita(char **matriz, int *tamCobra, Cobra *cobra)
 {
     int i;
-    matriz[cobra[0].i][cobra[0].j+1] = CABECA;
-    for(i = 0; i < (*tamCobra)-1; i++)
+
+    // Verifica se a próxima casa é comida, para então crescer o tamanho da cobra
+    if(matriz[cobra[0].i][cobra[0].j+1] == COMIDA)
     {
-        cobra[i + 1] = cobra[i];
-        matriz[cobra[i+1].i][cobra[i+1].j] = matriz[cobra[i].i][cobra[i].j];
+        geraAlimento(matriz);
+        (*tamCobra)++;
     }
-    matriz[cobra[i].i][cobra[i].j] = CARACTERE;
+    // Copia os dados da cauda para a nova cauda 
+    cobra[*tamCobra] = cobra[(*tamCobra)-1];
+
+    // Move a cabeça para cima
+    matriz[cobra[0].i][cobra[0].j+1] = CABECA;
+    for(i = (*tamCobra)-1; i > 0; i--)
+    {
+        // Move o corpo, seguindo a cabeça
+        cobra[i] = cobra[i-1];
+        matriz[cobra[i].i][cobra[i].j] = CORPO;
+    }
+    // "Limpa" o espaço que a cauda passou
+    matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] = CARACTERE;
+    // Atualiza a coordenada da cabeça
     cobra[0].j++;
 }
 
 void esquerda(char **matriz, int *tamCobra, Cobra *cobra)
 {
     int i;
-    matriz[cobra[0].i][cobra[0].j-1] = CABECA;
-    for(i = 0; i < (*tamCobra)-1; i++)
+
+    // Verifica se a próxima casa é comida, para então crescer o tamanho da cobra
+    if(matriz[cobra[0].i][cobra[0].j-1] == COMIDA)
     {
-        cobra[i + 1] = cobra[i];
-        matriz[cobra[i+1].i][cobra[i+1].j] = matriz[cobra[i].i][cobra[i].j];
+        geraAlimento(matriz);
+        (*tamCobra)++;
     }
-    matriz[cobra[i].i][cobra[i].j] = CARACTERE;
+    // Copia os dados da cauda para a nova cauda 
+    cobra[*tamCobra] = cobra[(*tamCobra)-1];
+
+    // Move a cabeça para cima
+    matriz[cobra[0].i][cobra[0].j-1] = CABECA;
+    for(i = (*tamCobra)-1; i > 0; i--)
+    {
+        // Move o corpo, seguindo a cabeça
+        cobra[i] = cobra[i-1];
+        matriz[cobra[i].i][cobra[i].j] = CORPO;
+    }
+    // "Limpa" o espaço que a cauda passou
+    matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] = CARACTERE;
+    // Atualiza a coordenada da cabeça
     cobra[0].j--;
 }
 
-
 void jogar(char **matriz)
 {
-    int icomida, jcomida, tamCobra = 1;
+    int tamCobra = 1;
     Cobra cobra[TAM*TAM];
     char direcao, aux;
 
@@ -173,7 +223,7 @@ void jogar(char **matriz)
     cobra[0].i = 0;
     cobra[0].j = 0;
 
-    geraAlimento(matriz, &icomida, &jcomida);
+    geraAlimento(matriz);
     
     exibirMatriz(matriz);
     direcao = getch();
@@ -227,7 +277,7 @@ void jogar(char **matriz)
 
 int main()
 {
-    int op;
+    // int op;
 
     char **matriz = (char **) malloc(TAM * sizeof(char*));
     for(int i = 0; i < TAM; i++)
@@ -235,21 +285,21 @@ int main()
 
     srand(time(NULL));
 
-    do
-    {
-        op = menu();
-        switch(op)
-        {
-            case 1:
+    // do
+    // {
+    //     op = menu();
+    //     switch(op)
+    //     {
+    //         case 1:
                 jogar(matriz);
-                break;
-            case 0:
-                printf("\nSaindo...\n");
-                break;
-            default:
-                printf("\nOpcao invalida!!\n");
-        }
-    }while(op != 0);
+    //             break;
+    //         case 0:
+    //             printf("\nSaindo...\n");
+    //             break;
+    //         default:
+    //             printf("\nOpcao invalida!!\n");
+    //     }
+    // }while(op != 0);
 
     for(int i = 0; i < TAM; i++)
         free(matriz[i]);
