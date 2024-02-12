@@ -19,13 +19,6 @@ HANDLE hConsole;
 CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
 WORD pinturaPadrao;
 
-void salvaPintura()
-{
-    hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
-    pinturaPadrao = consoleInfo.wAttributes;
-}
-
 typedef struct
 {
     int i;
@@ -58,6 +51,7 @@ int leiaInt(char *texto)
     
     return num;
 }
+
 ///////////////////////     FUNÇÕES DO JOGO EM SI     ////////////////////////////////////
 
 int menu()
@@ -178,10 +172,21 @@ int morte(char **matriz, Cobra *cobra, char direcao)
     return 0;
 }
 
+void moveCorpo(char **matriz, int *tamCobra, Cobra *cobra)
+{
+    for(int i = (*tamCobra)-1; i > 0; i--)
+    {
+        // Move o corpo, seguindo a cabeça
+        cobra[i] = cobra[i-1];
+        matriz[cobra[i].i][cobra[i].j] = CORPO;
+    }
+    // "Limpa" o espaço que a cauda passou
+    if((*tamCobra) < TAM*TAM && matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] != COMIDA)
+        matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] = CARACTERE;
+}
+
 void acima(char **matriz, int *tamCobra, Cobra *cobra)
 {
-    int i;
-
     // Verifica se a próxima casa é comida, para então crescer o tamanho da cobra
     if(matriz[cobra[0].i-1][cobra[0].j] == COMIDA)
         (*tamCobra)++;
@@ -190,23 +195,13 @@ void acima(char **matriz, int *tamCobra, Cobra *cobra)
 
     // Move a cabeça para cima
     matriz[cobra[0].i-1][cobra[0].j] = CABECA;
-    for(i = (*tamCobra)-1; i > 0; i--)
-    {
-        // Move o corpo, seguindo a cabeça
-        cobra[i] = cobra[i-1];
-        matriz[cobra[i].i][cobra[i].j] = CORPO;
-    }
-    // "Limpa" o espaço que a cauda passou
-    if((*tamCobra) < TAM*TAM && matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] != COMIDA)
-        matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] = CARACTERE;
+    moveCorpo(matriz, tamCobra, cobra);
     // Atualiza a coordenada da cabeça
     cobra[0].i--;
 }
 
 void abaixo(char **matriz, int *tamCobra, Cobra *cobra)
 {
-    int i;
-
     // Verifica se a próxima casa é comida, para então crescer o tamanho da cobra
     if(matriz[cobra[0].i+1][cobra[0].j] == COMIDA)
         (*tamCobra)++;
@@ -215,23 +210,14 @@ void abaixo(char **matriz, int *tamCobra, Cobra *cobra)
 
     // Move a cabeça para baixo
     matriz[cobra[0].i+1][cobra[0].j] = CABECA;
-    for(i = (*tamCobra)-1; i > 0; i--)
-    {
-        // Move o corpo, seguindo a cabeça
-        cobra[i] = cobra[i-1];
-        matriz[cobra[i].i][cobra[i].j] = CORPO;
-    }
-    // "Limpa" o espaço que a cauda passou
-    if((*tamCobra) < TAM*TAM && matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] != COMIDA)
-        matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] = CARACTERE;
+    moveCorpo(matriz, tamCobra, cobra);
+
     // Atualiza a coordenada da cabeça
     cobra[0].i++;
 }
 
 void direita(char **matriz, int *tamCobra, Cobra *cobra)
 {
-    int i;
-
     // Verifica se a próxima casa é comida, para então crescer o tamanho da cobra
     if(matriz[cobra[0].i][cobra[0].j+1] == COMIDA)
         (*tamCobra)++;
@@ -240,23 +226,14 @@ void direita(char **matriz, int *tamCobra, Cobra *cobra)
 
     // Move a cabeça para direita
     matriz[cobra[0].i][cobra[0].j+1] = CABECA;
-    for(i = (*tamCobra)-1; i > 0; i--)
-    {
-        // Move o corpo, seguindo a cabeça
-        cobra[i] = cobra[i-1];
-        matriz[cobra[i].i][cobra[i].j] = CORPO;
-    }
-    // "Limpa" o espaço que a cauda passou
-    if((*tamCobra) < TAM*TAM && matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] != COMIDA)
-        matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] = CARACTERE;
+    moveCorpo(matriz, tamCobra, cobra);
+
     // Atualiza a coordenada da cabeça
     cobra[0].j++;
 }
 
 void esquerda(char **matriz, int *tamCobra, Cobra *cobra)
 {
-    int i;
-
     // Verifica se a próxima casa é comida, para então crescer o tamanho da cobra
     if(matriz[cobra[0].i][cobra[0].j-1] == COMIDA)
         (*tamCobra)++;
@@ -265,15 +242,8 @@ void esquerda(char **matriz, int *tamCobra, Cobra *cobra)
 
     // Move a cabeça para esquerda
     matriz[cobra[0].i][cobra[0].j-1] = CABECA;
-    for(i = (*tamCobra)-1; i > 0; i--)
-    {
-        // Move o corpo, seguindo a cabeça
-        cobra[i] = cobra[i-1];
-        matriz[cobra[i].i][cobra[i].j] = CORPO;
-    }
-    // "Limpa" o espaço que a cauda passou
-    if((*tamCobra) < TAM*TAM && matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] != COMIDA)
-        matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] = CARACTERE;
+    moveCorpo(matriz, tamCobra, cobra);
+
     // Atualiza a coordenada da cabeça
     cobra[0].j--;
 }
