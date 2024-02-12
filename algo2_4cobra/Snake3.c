@@ -135,6 +135,28 @@ void exibirMatriz(char **matriz, int *tamCobra)
     printf("\nPontuacao: %d\n", ((*tamCobra)-1)*5);
 }
 
+void atualizaPixel(char **matriz, int i, int j)
+{
+    HANDLE video = GetStdHandle(STD_OUTPUT_HANDLE);
+    int i2, j2;
+
+    i2 = i + 1;
+    j2 = (j*2) + 1;
+    COORD posicao = {j2, i2};
+
+    SetConsoleCursorPosition(video, posicao);
+    printf("%c", matriz[i][j]);
+}
+
+void atualizaPonto(int tamCobra)
+{
+    HANDLE video = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD posicao = {11, TAM+2};
+
+    SetConsoleCursorPosition(video, posicao);
+    printf("%d", (tamCobra-1)*5);
+}
+
 void geraAlimento(char **matriz, int *tamCobra, int *iComida, int *jComida)
 {
     int i, j, invalido = 1;
@@ -150,6 +172,7 @@ void geraAlimento(char **matriz, int *tamCobra, int *iComida, int *jComida)
         matriz[i][j] = COMIDA;
         *iComida = i;
         *jComida = j;
+        atualizaPixel(matriz, i, j);
     }
 }
 
@@ -175,10 +198,14 @@ void moveCorpo(char **matriz, int *tamCobra, Cobra *cobra)
         // Move o corpo, seguindo a cabeça
         cobra[i] = cobra[i-1];
         matriz[cobra[i].i][cobra[i].j] = CORPO;
+        atualizaPixel(matriz, cobra[i].i, cobra[i].j);
     }
     // "Limpa" o espaço que a cauda passou
     if((*tamCobra) < TAM*TAM && matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] != COMIDA)
+    {
         matriz[cobra[*tamCobra].i][cobra[*tamCobra].j] = CARACTERE;
+        atualizaPixel(matriz, cobra[*tamCobra].i, cobra[*tamCobra].j);
+    }
 }
 
 void acima(char **matriz, int *tamCobra, Cobra *cobra)
@@ -191,6 +218,7 @@ void acima(char **matriz, int *tamCobra, Cobra *cobra)
 
     // Move a cabeça para cima
     matriz[cobra[0].i-1][cobra[0].j] = CABECA;
+    atualizaPixel(matriz, cobra[0].i-1, cobra[0].j);
     moveCorpo(matriz, tamCobra, cobra);
     // Atualiza a coordenada da cabeça
     cobra[0].i--;
@@ -206,6 +234,7 @@ void abaixo(char **matriz, int *tamCobra, Cobra *cobra)
 
     // Move a cabeça para baixo
     matriz[cobra[0].i+1][cobra[0].j] = CABECA;
+    atualizaPixel(matriz, cobra[0].i+1, cobra[0].j);
     moveCorpo(matriz, tamCobra, cobra);
 
     // Atualiza a coordenada da cabeça
@@ -222,6 +251,7 @@ void direita(char **matriz, int *tamCobra, Cobra *cobra)
 
     // Move a cabeça para direita
     matriz[cobra[0].i][cobra[0].j+1] = CABECA;
+    atualizaPixel(matriz, cobra[0].i, cobra[0].j+1);
     moveCorpo(matriz, tamCobra, cobra);
 
     // Atualiza a coordenada da cabeça
@@ -238,6 +268,7 @@ void esquerda(char **matriz, int *tamCobra, Cobra *cobra)
 
     // Move a cabeça para esquerda
     matriz[cobra[0].i][cobra[0].j-1] = CABECA;
+    atualizaPixel(matriz, cobra[0].i, cobra[0].j-1);
     moveCorpo(matriz, tamCobra, cobra);
 
     // Atualiza a coordenada da cabeça
@@ -260,11 +291,13 @@ int jogar(char **matriz)
     geraAlimento(matriz, &tamCobra, &iComida, &jComida);
     exibirMatriz(matriz, &tamCobra);
 
+    // atualizaPixel(matriz, 0, 0);
+
     direcao = getch();
     do
     {
         tamAntigo = tamCobra;
-        exibirMatriz(matriz, &tamCobra);
+        // exibirMatriz(matriz, &tamCobra);
         
         if(_kbhit())
         {
@@ -288,11 +321,15 @@ int jogar(char **matriz)
                     break;
 
                 case 'p':
+                    exibirMatriz(matriz, &tamCobra);
                     return 0;
             }
         }
         if(morte(matriz, cobra, direcao))
+        {
+            exibirMatriz(matriz, &tamCobra);
             return 0;
+        }
 
         switch(direcao)
         {
@@ -314,11 +351,16 @@ int jogar(char **matriz)
         }
 
         if((tamAntigo != tamCobra) && dificuldade > 30)
-            dificuldade -= 10;
+            dificuldade -= 1;
         else if((tamAntigo != tamCobra) && dificuldade > 1)
             dificuldade -= 1;
+
         if(matriz[iComida][jComida] != COMIDA)
+        {
             geraAlimento(matriz, &tamCobra, &iComida, &jComida);
+            atualizaPonto(tamCobra);
+        }
+
         Sleep(dificuldade);
     }while(tamCobra < TAM * TAM);
     exibirMatriz(matriz, &tamCobra);
