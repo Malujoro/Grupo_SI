@@ -313,7 +313,8 @@ editar_paciente(ConjuntoCaracteristicas, Diabetes) :-
     (Opcao = 7, !, leiaIMC(IMC2), adicionar_paciente([Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC2, Hemoglobina, Glicose], Diabetes));
     (Opcao = 8, !, leiaHemoglobina(Hemoglobina2), adicionar_paciente([Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina2, Glicose], Diabetes));
     (Opcao = 9, !, leiaGlicose(Glicose2), adicionar_paciente([Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose2], Diabetes));
-    (Opcao = 0, !, repeat, write('Diabete? '), nl, read(Diabetes2), (atom(Diabetes2), (Diabetes2 = sim ; Diabetes2 = nao) -> adicionar_paciente(ConjuntoCaracteristicas, Diabetes2) ; write('Erro! Digite sim ou nao (letras minúsculas)!!')))).
+    (Opcao = 0, !, repeat, nl, write('Diabete? '), nl, read(Diabetes2), (atom(Diabetes2), (Diabetes2 = sim ; Diabetes2 = nao) -> adicionar_paciente(ConjuntoCaracteristicas, Diabetes2) ; write('Erro! Digite sim ou nao (letras minúsculas)!!'), nl, fail))
+    ).
 
 % Regra para Remover um paciente
 remover_paciente(ConjuntoCaracteristicas, Diabetes) :-
