@@ -288,9 +288,8 @@ adicionar_paciente(ConjuntoCaracteristicas, Diabetes)  :-
 
 % Regra para Editar um paciente
 editar_paciente(ConjuntoCaracteristicas, Diabetes) :-
-    paciente(ConjuntoCaracteristicas, Diabetes),
-    [Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose] = ConjuntoCaracteristicas,
     remover_paciente(ConjuntoCaracteristicas, Diabetes),
+    [Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose] = ConjuntoCaracteristicas,
 
     nl, write('Editar: '),
     nl, write('[1] - Nome'),
@@ -314,7 +313,8 @@ editar_paciente(ConjuntoCaracteristicas, Diabetes) :-
     (Opcao = 7, !, leiaIMC(IMC2), adicionar_paciente([Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC2, Hemoglobina, Glicose], Diabetes));
     (Opcao = 8, !, leiaHemoglobina(Hemoglobina2), adicionar_paciente([Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina2, Glicose], Diabetes));
     (Opcao = 9, !, leiaGlicose(Glicose2), adicionar_paciente([Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose2], Diabetes));
-    (Opcao = 0, !, repeat, write('Diabete? '), nl, read(Diabetes2), (atom(Diabetes2), (Diabetes2 = sim ; Diabetes2 = nao) -> adicionar_paciente(ConjuntoCaracteristicas, Diabetes2) ; write('Erro! Digite sim ou nao (letras minúsculas)!!')))).
+    (Opcao = 0, !, repeat, nl, write('Diabete? '), nl, read(Diabetes2), (atom(Diabetes2), (Diabetes2 = sim ; Diabetes2 = nao) -> adicionar_paciente(ConjuntoCaracteristicas, Diabetes2) ; write('Erro! Digite sim ou nao (letras minúsculas)!!'), nl, fail))
+    ).
 
 % Regra para Remover um paciente
 remover_paciente(ConjuntoCaracteristicas, Diabetes) :-
@@ -324,7 +324,7 @@ remover_paciente(ConjuntoCaracteristicas, Diabetes) :-
     nl, write('Dados: '), write(ConjuntoCaracteristicas), write(' '), write(Diabetes), nl,
     read(Opcao),
     (atom(Opcao), (Opcao = sim ; Opcao = nao) ->
-        (Opcao = sim, retract(paciente(ConjuntoCaracteristicas, Diabetes)), true);
+        (Opcao = sim, retract(paciente(ConjuntoCaracteristicas, Diabetes)), true ; fail);
         write('Erro! Digite sim ou nao (letras minúsculas)!!')
     ).
 
@@ -336,9 +336,8 @@ calcular_IMC(Peso, Altura, IMC) :-
 % Caso o usuário não informe algum dado, o programa irá perguntar
 diagnosticar_diabetes([Nome, Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose], Diabetes) :-
     
-    (var(Nome) -> leiaNome(Nome) ; 
-        ((paciente([Nome | Conjunto2], Diabetes2), Base = antigo, [Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose] = Conjunto2);
-        (Base = novo))
+    (var(Nome) -> leiaNome(Nome), Base = novo ; 
+        ((paciente([Nome | Conjunto2], Diabetes2), Base = antigo, [Sexo, Idade, Hipertensao, Cardiaco, Fumante, IMC, Hemoglobina, Glicose] = Conjunto2); Base = novo)
     ),
 
     leiaSexo(Sexo),
