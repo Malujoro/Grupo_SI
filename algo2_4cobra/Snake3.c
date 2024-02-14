@@ -350,9 +350,7 @@ int jogar(char **matriz)
                 break;
         }
 
-        if((tamAntigo != tamCobra) && dificuldade > 30)
-            dificuldade -= 1;
-        else if((tamAntigo != tamCobra) && dificuldade > 1)
+        if((tamAntigo != tamCobra) && dificuldade > 1)
             dificuldade -= 1;
 
         if(matriz[iComida][jComida] != COMIDA)
