@@ -540,7 +540,7 @@ int main()
                 exibirPontuacao();
                 break;
             case 3:
-                printf("\nSaindo...\n");
+                printf("\n\nSaindo...\n");
                 break;
             default:
                 printf("\nOpcao invalida!!\n");
