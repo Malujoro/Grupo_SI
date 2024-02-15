@@ -470,7 +470,9 @@ void exibirPontuacao()
     system("cls");
     if(arquivo == NULL)
     {
-        printf("\nNão existe nenhuma pontuacao registrada\n");
+        printf("\nNao existe nenhuma pontuacao registrada\n");
+        printf("\nPressione qualquer tecla para voltar ao menu!\n");
+        getch();
         return;
     }
     else

@@ -1,0 +1,9 @@
+110 Mateus
+0 Lucas
+90 Lucas
+100 Mateus
+70 Mateus
+15 Luis
+160 Mateus
+105 Luis
+180 Pedro
