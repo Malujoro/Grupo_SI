@@ -11,10 +11,24 @@
 #define CABECA '0'
 #define CORPO 'o'
 #define CERCA '\xdb'
+#define ARQUIVO "pontuacao.txt"
+#define BRANCO 0
+#define AZUL FOREGROUND_BLUE
+#define VERDE FOREGROUND_GREEN
+#define CIANO 3
+#define ROSA 5
+#define AMARELO 6
+#define VERMELHO FOREGROUND_RED
+// pintarLetra(7); // Branco
+#define CINZA 8
+// pintarLetra(9); // Roxo
 
-// printf("\xC9 \xCD \xBB\n"); // ┌ ─ ┐
-// printf("\xCA \xC5 \xBC\n"); // ┴ ┼ ┘
-// printf("\xC8 \xBA"); // └ │
+// \xC9 ┌ \xCD ─ \xBB ┐ \xBA │
+// \xC8 └ \xCA ┴ \xBC ┘ \xC5 ┼
+
+HANDLE tela;
+CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+WORD pinturaPadrao;
 
 typedef struct
 {
@@ -49,7 +63,21 @@ int leiaInt(char *texto)
     return num;
 }
 
+FILE *abrirArquivo(char *nome, char *modo)
+{
+    FILE *arquivo = fopen(nome, modo);
+    return arquivo;
+}
+
 ///////////////////////     FUNÇÕES DO JOGO EM SI     ////////////////////////////////////
+
+void pintarLetra(int Cor)
+{
+    if(Cor == 0)
+        SetConsoleTextAttribute(tela, pinturaPadrao | FOREGROUND_INTENSITY);
+    else
+        SetConsoleTextAttribute(tela, Cor | FOREGROUND_INTENSITY);
+}
 
 /////  FUNÇÕES PARA GERAR UM MENU INTERATIVO  /////
 
@@ -61,13 +89,6 @@ void moveXY(int x, int y, char t[10])
     printf("%s", t);
 }
 
-// void menu()
-// {
-//     moveXY(12, 1, "-----SNAKE GAME-----");	
-//     moveXY(13, 5, "Jogar");
-//     moveXY(13, 10, "Sair");
-// }
-
 void beep(int frequencia, int duracao) {
     Beep(frequencia, duracao);
 }
@@ -75,14 +96,19 @@ void beep(int frequencia, int duracao) {
 int menuInterativo()
 {
     char entrada;
-    int posX = 3, posY = 5, op = 1;
+    int posX = 3, posY = 4, op = 1;
 
     do
     {		
         system("cls");
-        moveXY(posX+2, 1, "-----SNAKE GAME-----");	
-        moveXY(posX+3, 5, "Jogar");
+
+        pintarLetra(VERDE);
+        moveXY(posX+2, 1, "-----SNAKE GAME-----");
+        pintarLetra(AZUL);
+        moveXY(posX+3, 4, "Jogar");
+        moveXY(posX+3, 7, "Exibir pontuacoes");
         moveXY(posX+3, 10, "Sair");
+        pintarLetra(ROSA);
         moveXY(posX, posY, "->");
 
         entrada = toupper(getch());
@@ -90,10 +116,10 @@ int menuInterativo()
         switch(entrada)
         {
             case 'W': // Tecla W para cima
-                if (posY > 5)
+                if (posY > 4)
                 {
                     moveXY(posX, posY, "  ");
-                    posY -= 5;
+                    posY -= 3;
                     moveXY(posX, posY, "->");
                     beep(400, 100);
                     op--;
@@ -104,7 +130,7 @@ int menuInterativo()
                 if (posY < 10)
                 {
                     moveXY(posX, posY, "  ");
-                    posY += 5;
+                    posY += 3;
                     moveXY(posX, posY, "->");
                     beep(400, 100);
                     op++;
@@ -112,7 +138,7 @@ int menuInterativo()
                 break;
         }
     } while(entrada != 13);
-
+    pintarLetra(BRANCO);
     return op;
 }
 
@@ -120,17 +146,8 @@ int menuInterativo()
 
 void instrucoes()
 {
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-    WORD pinturaPadrao;
-
-    // Salva as configurações de cor atuais
-    GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
-    pinturaPadrao = consoleInfo.wAttributes;
-
-    // Define a cor do texto
     system("cls");
-    SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+    pintarLetra(VERDE);
     printf("\n     Teclas do jogo ");
     printf("\n       \xC9\xCD\xCD\xCD\xBB");
     printf("\n       \xBA W \xBA");
@@ -138,30 +155,37 @@ void instrucoes()
     printf("\n   \xBA A \xBA S \xBA D \xBA   \xBA P \xBA");
     printf("\n   \xC8\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xBC   \xC8\xCD\xCD\xCD\xBC");
 
-    SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-
+    pintarLetra(AZUL);
     printf("\n[W] - Andar pra cima");
     printf("\n[A] - Andar pra esquerda");
     printf("\n[S] - Andar pra baixo");
     printf("\n[D] - Andar pra direita");
     printf("\n[P] - Sair da partida");
         
-    SetConsoleTextAttribute(hConsole, pinturaPadrao);
-        
+    pintarLetra(BRANCO);
     printf("\n\nPressione qualquer tecla para continuar!\n");
     getch();
 }
 
 void vitoria()
 {
+    pintarLetra(VERDE);
     printf("\nParabens! \nVoce ganhou!!\n");
+    pintarLetra(BRANCO);
     return;
 }
 
 void gameOver()
 {
+    pintarLetra(VERMELHO);
     printf("\nGame Over!\n");
+    pintarLetra(BRANCO);
     return;
+}
+
+int calculaPontuacao(int tamCobra)
+{
+    return (tamCobra-1)*5;
 }
 
 void preencherMatriz(char **matriz)
@@ -173,25 +197,35 @@ void preencherMatriz(char **matriz)
     }
 }
 
-void exibirMatriz(char **matriz, int *tamCobra)
+void exibirMatriz(char **matriz, int tamCobra)
 {
     system("cls");
     
+    pintarLetra(CINZA);
     for(int i = 0; i < (TAM+1)*2; i++) 
         printf("%c", CERCA);     
     printf("\n");
 
     for(int i = 0; i < TAM; i++)
     {
+        pintarLetra(CINZA);
         printf("%c", CERCA);
         for(int j = 0; j < TAM; j++)
-            printf("%c ", matriz[i][j]); 
+        {
+            if(matriz[i][j] == CORPO || matriz[i][j] == CABECA)
+                pintarLetra(VERDE);
+            else if(matriz[i][j] == COMIDA)
+                pintarLetra(VERMELHO);
+            printf("%c ", matriz[i][j]);
+        }
+        pintarLetra(CINZA);
         printf("%c\n", CERCA);
     }
 
     for(int i = 0; i < ((TAM+1)*2); i++)
         printf("%c", CERCA);
-    printf("\nPontuacao: %d\n", ((*tamCobra)-1)*5);
+    pintarLetra(BRANCO);
+    printf("\nPontuacao: %d\n", calculaPontuacao(tamCobra));
 }
 
 void atualizaPixel(char **matriz, int i, int j)
@@ -204,7 +238,13 @@ void atualizaPixel(char **matriz, int i, int j)
     COORD posicao = {j2, i2};
 
     SetConsoleCursorPosition(video, posicao);
+    if(matriz[i][j] == CORPO || matriz[i][j] == CABECA)
+        pintarLetra(VERDE);
+    else if(matriz[i][j] == COMIDA)
+        pintarLetra(VERMELHO);
+
     printf("%c", matriz[i][j]);
+    pintarLetra(BRANCO);
 }
 
 void atualizaPonto(int tamCobra)
@@ -213,13 +253,13 @@ void atualizaPonto(int tamCobra)
     COORD posicao = {11, TAM+2};
 
     SetConsoleCursorPosition(video, posicao);
-    printf("%d", (tamCobra-1)*5);
+    printf("%d", calculaPontuacao(tamCobra));
 }
 
-void geraAlimento(char **matriz, int *tamCobra, int *iComida, int *jComida)
+void geraAlimento(char **matriz, int tamCobra, int *iComida, int *jComida)
 {
     int i, j, invalido = 1;
-    if((*tamCobra) < TAM * TAM)
+    if(tamCobra < TAM * TAM)
     {
         do
         {
@@ -334,10 +374,11 @@ void esquerda(char **matriz, int *tamCobra, Cobra *cobra)
     cobra[0].j--;
 }
 
-int jogar(char **matriz)
+int jogar(char **matriz, int *tamCobra)
 {
     // Procedimentos iniciais do jogo
-    int tamCobra = 1, dificuldade = 100, tamAntigo, iComida, jComida;
+    *tamCobra = 1;
+    int dificuldade = 100, tamAntigo, iComida, jComida;
     Cobra cobra[(TAM*TAM)+1];
     char direcao, aux;
 
@@ -347,15 +388,15 @@ int jogar(char **matriz)
     cobra[0].j = 0;
     cobra[1] = cobra[0];
 
-    geraAlimento(matriz, &tamCobra, &iComida, &jComida);
-    exibirMatriz(matriz, &tamCobra);
+    exibirMatriz(matriz, *tamCobra);
+    geraAlimento(matriz, *tamCobra, &iComida, &jComida);
 
     // atualizaPixel(matriz, 0, 0);
 
     direcao = getch();
     do
     {
-        tamAntigo = tamCobra;
+        tamAntigo = *tamCobra;
         // exibirMatriz(matriz, &tamCobra);
         
         if(_kbhit())
@@ -380,53 +421,95 @@ int jogar(char **matriz)
                     break;
 
                 case 'p':
-                    exibirMatriz(matriz, &tamCobra);
                     return 0;
             }
         }
+
         if(morte(matriz, cobra, direcao))
-        {
-            exibirMatriz(matriz, &tamCobra);
             return 0;
-        }
 
         switch(direcao)
         {
             case 'w':
-                acima(matriz, &tamCobra, cobra);
+                acima(matriz, tamCobra, cobra);
                 break;
             
             case 'a':
-                esquerda(matriz, &tamCobra, cobra);
+                esquerda(matriz, tamCobra, cobra);
                 break;
                 
             case 's':
-                abaixo(matriz, &tamCobra, cobra);
+                abaixo(matriz, tamCobra, cobra);
                 break;
             
             case 'd':
-                direita(matriz, &tamCobra, cobra);
+                direita(matriz, tamCobra, cobra);
                 break;
         }
 
-        if((tamAntigo != tamCobra) && dificuldade > 1)
+        if((tamAntigo != *tamCobra) && dificuldade > 1)
             dificuldade -= 1;
 
         if(matriz[iComida][jComida] != COMIDA)
         {
-            geraAlimento(matriz, &tamCobra, &iComida, &jComida);
-            atualizaPonto(tamCobra);
+            geraAlimento(matriz, *tamCobra, &iComida, &jComida);
+            atualizaPonto(*tamCobra);
         }
 
         Sleep(dificuldade);
-    }while(tamCobra < TAM * TAM);
-    exibirMatriz(matriz, &tamCobra);
+    }while(*tamCobra < TAM * TAM);
     return 1;
+}
+
+void exibirPontuacao()
+{
+    FILE *arquivo = abrirArquivo(ARQUIVO, "r");
+    char nome[100];
+    int pontuacao;
+
+    system("cls");
+    if(arquivo == NULL)
+    {
+        printf("\nNão existe nenhuma pontuacao registrada\n");
+        return;
+    }
+    else
+    {
+        printf("\nPontuacoes registradas: \n");
+        while(fscanf(arquivo, "%d %[^\n]s", &pontuacao, nome) == 2)
+        {
+            printf("\nJogador: %s", nome);
+            printf("\nPontuacao: %d\n", pontuacao);
+        }
+    }
+    printf("\nPressione qualquer tecla para voltar ao menu!\n");
+    getch();
+    fclose(arquivo);
+}
+
+void salvarPontuacao(int tamCobra)
+{
+    FILE *arquivo = abrirArquivo(ARQUIVO, "a");
+    char nome[100];
+
+    printf("\nDigite seu nome para salvar sua pontuacao: \n");
+    scanf(" %[^\n]s", nome);
+    limpaBuffer();
+    fprintf(arquivo, "%d %s\n", calculaPontuacao(tamCobra), nome);
+
+    printf("\nPressione qualquer tecla para voltar ao menu!\n");
+    getch();
+    fclose(arquivo);
 }
 
 int main()
 {
-    int op;
+    tela = GetStdHandle(STD_OUTPUT_HANDLE);
+    GetConsoleScreenBufferInfo(tela, &consoleInfo);
+    pinturaPadrao = consoleInfo.wAttributes;
+
+    int op, tamCobra;
+
     char **matriz = (char **) malloc(TAM * sizeof(char*));
     for(int i = 0; i < TAM; i++)
         matriz[i] = (char *) malloc(TAM * sizeof(char));
@@ -440,22 +523,29 @@ int main()
         {
             case 1:
                 instrucoes();
-                if(jogar(matriz))
+                if(jogar(matriz, &tamCobra))
+                {
+                    exibirMatriz(matriz, tamCobra);
                     vitoria();
+                }
                 else
+                {
+                    exibirMatriz(matriz, tamCobra);
                     gameOver();
+                }
 
-                printf("\nPressione qualquer tecla para voltar ao menu!\n");
-                getch();
-                system("cls");
+                salvarPontuacao(tamCobra);
                 break;
             case 2:
+                exibirPontuacao();
+                break;
+            case 3:
                 printf("\nSaindo...\n");
                 break;
             default:
                 printf("\nOpcao invalida!!\n");
         }
-    }while(op != 2);
+    }while(op != 3);
 
     for(int i = 0; i < TAM; i++)
         free(matriz[i]);
