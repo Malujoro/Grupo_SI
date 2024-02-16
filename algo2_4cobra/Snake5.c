@@ -394,14 +394,11 @@ int jogar(char **matriz, int *tamCobra)
     exibirMatriz(matriz, *tamCobra);
     geraAlimento(matriz, *tamCobra, &iComida, &jComida);
 
-    // atualizaPixel(matriz, 0, 0);
-
     direcao = getch();
     do
     {
         tamAntigo = *tamCobra;
-        // exibirMatriz(matriz, &tamCobra);
-        
+
         if(_kbhit())
         {
             aux = tolower(_getch());

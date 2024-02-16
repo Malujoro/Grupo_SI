@@ -1,9 +1,10 @@
 145 Mateus
 125 Mateus
 15 Mateus
-0 a
-0 a
-15 P
 140 Mateus
-120 a
-0 a
+200 Alef
+0 alef
+5 botan
+90 mateus
+10 a
+130 a
