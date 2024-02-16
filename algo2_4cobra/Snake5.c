@@ -73,7 +73,7 @@ FILE *abrirArquivo(char *nome, char *modo)
 
 void pintarLetra(int Cor)
 {
-    if(Cor == 0)
+    if(Cor == BRANCO)
         SetConsoleTextAttribute(tela, pinturaPadrao | FOREGROUND_INTENSITY);
     else
         SetConsoleTextAttribute(tela, Cor | FOREGROUND_INTENSITY);
@@ -109,6 +109,9 @@ int menuInterativo()
         moveXY(posX+3, 7, "Exibir pontuacoes");
         moveXY(posX+3, 10, "Sair");
         pintarLetra(ROSA);
+        printf("\n\n\n[W] - Opcao de cima");
+        printf("\n[S] - Opcao de baixo");
+        printf("\n[Enter] - Escolher opcao");
         moveXY(posX, posY, "->");
 
         entrada = toupper(getch());
@@ -542,7 +545,8 @@ int main()
                 exibirPontuacao();
                 break;
             case 3:
-                printf("\n\nSaindo...\n");
+                system("cls");
+                printf("\nSaindo...\n");
                 break;
             default:
                 printf("\nOpcao invalida!!\n");
